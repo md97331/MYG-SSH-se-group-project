@@ -5,6 +5,7 @@ function App() {
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
     const [message, setMessage] = useState('');
+    const [error, setError] = useState(''); // Error message state for ZIP code validation
 
     // Fetch initial message from Flask backend
     useEffect(() => {
@@ -19,6 +20,12 @@ function App() {
 
     // Handle ZIP code submission
     const handleZipSubmit = () => {
+        if (zipCode.length > 7) {
+            setError('ZIP code cannot exceed 7 characters.');
+            return;
+        }
+        setError(''); // Clear any previous errors
+
         if (zipCode) {
             // Mock store data (replace this with a real API call if needed)
             const mockStores = [
@@ -30,9 +37,18 @@ function App() {
         }
     };
 
+    // Handle ZIP code input change with length restriction
+    const handleZipChange = (e) => {
+        const value = e.target.value;
+        if (value.length <= 7) {
+            setZipCode(value);
+        }
+    };
+
     return (
         <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
-            
+            <h1>Welcome to Group Delivery!</h1>
+            <p>Find your supermarket below</p>
 
             {/* Location Input */}
             <div style={{ marginTop: '30px' }}>
@@ -43,7 +59,7 @@ function App() {
                         type="text"
                         placeholder="Enter ZIP Code"
                         value={zipCode}
-                        onChange={(e) => setZipCode(e.target.value)}
+                        onChange={handleZipChange}
                         style={{
                             padding: '10px',
                             fontSize: '16px',
@@ -66,6 +82,8 @@ function App() {
                         Submit
                     </button>
                 </div>
+                {/* Display error message */}
+                {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
             </div>
 
             {/* Display Stores */}
