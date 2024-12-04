@@ -11,10 +11,11 @@ CORS(app)
 
 def get_db_connection():
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST", "localhost"),
+        host=os.getenv("DB_HOST", "db"), 
+        port=int(os.getenv("DB_PORT", 3306)),
         user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", ""),
-        database=os.getenv("DB_NAME", "default")
+        password=os.getenv("DB_PASSWORD", "73961200"),
+        database=os.getenv("DB_NAME", "supermarkets_db")
     )
 
 def execute_query(query, params=None, fetchone=False):

@@ -1,44 +1,45 @@
 version: '3.8'
 
 services:
-  backend:
+  flask:
     build:
       context: ./server
     ports:
-      - "5000:5000"
+      - "5001:5001"
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - FLASK_ENV=${FLASK_ENV}
-      - SECRET_KEY=${SECRET_KEY}
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=73961200
+      - DB_NAME=supermarkets_db
     depends_on:
-      - db
-    networks:
-      - app-network
-
-  frontend:
-    build:
-      context: ./client
-    ports:
-      - "3000:3000"
-    stdin_open: true
-    tty: true
-    environment:
-      - REACT_APP_API_URL=${REACT_APP_API_URL}
+      db:
+        condition: service_healthy
     networks:
       - app-network
 
   db:
     image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
     ports:
-      - "3306:3306"
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 73961200
+      MYSQL_DATABASE: supermarkets_db
     volumes:
-      - db-data:/var/lib/mysql
+      - db-data:/var/lib/mysql  # Persistent volume for MySQL data
+      - ./server/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  react:
+    build:
+      context: ./client
+    ports:
+      - "3000:80"
     networks:
       - app-network
 
