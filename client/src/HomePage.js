@@ -16,7 +16,7 @@ function App() {
 
     return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
-            <h1>React with Flask Example</h1>
+            <h1>Home Page</h1>
             <p>{message || 'Loading...'}</p>
         </div>
     );
