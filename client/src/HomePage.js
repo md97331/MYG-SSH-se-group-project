@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import StoresPage from './StoresPage'; // Import the new StoresPage component
 
 function Home() {
     const [zipCode, setZipCode] = useState('');
@@ -101,13 +102,29 @@ function Home() {
                 {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
             </div>
 
+            {/* Navigate to Stores Page */}
+            <button
+                onClick={() => navigate('/stores')}
+                style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    fontSize: '16px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                }}
+            >
+                Visit Store
+            </button>
+
             {/* Display Stores */}
             <div style={{ marginTop: '40px' }}>
                 <h2>Available Stores</h2>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                     {stores.map((store) => (
-                        <
-                        div
+                        <div
                             key={store.id}
                             style={{
                                 width: '200px',
@@ -160,15 +177,22 @@ function Cart() {
     );
 }
 
-function App() {
+function HomePage() {
+    const [cart, setCart] = useState([]);
+
+    const addToCart = (product) => {
+        setCart((prevCart) => [...prevCart, product]);
+    };
+
     return (
         <Router>
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/stores" element={<StoresPage addToCart={addToCart} />} />
             </Routes>
         </Router>
     );
 }
 
-export default App;
+export default HomePage;
