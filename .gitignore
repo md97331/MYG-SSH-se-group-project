@@ -1,0 +1,71 @@
+# General OS Files
+.DS_Store
+Thumbs.db
+
+# Python Files and Folders
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.env
+.env
+
+# Flask/Migrations
+instance/
+migrations/
+
+# Virtual Environment
+venv/
+.env/
+
+# Flask Debug Logs
+*.log
+*.sqlite3
+
+# React/Node.js Files and Folders
+client/node_modules/
+client/build/
+client/.env
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+
+# Editor/IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# Docker
+docker-compose.override.yml
+*.env
+
+# Coverage Reports
+htmlcov/
+*.cover
+*.coverage
+coverage.xml
+*.codecov
+
+# Logs
+*.log
+
+# Test Outputs
+.pytest_cache/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+*.cache
+*.pytest_cache/
+
+# Temp Files
+*.tmp
+*.out
+*.pid
+
+# Cache
+*.cache
+*.pytest_cache/
+client/.parcel-cache/
