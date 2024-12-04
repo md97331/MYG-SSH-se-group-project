@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-function App() {
+function Home() {
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState(''); // Error message state for ZIP code validation
+    const navigate = useNavigate();
 
     // Fetch initial message from Flask backend
     useEffect(() => {
@@ -26,15 +28,13 @@ function App() {
         }
         setError(''); // Clear any previous errors
 
-        if (zipCode) {
-            // Mock store data (replace this with a real API call if needed)
-            const mockStores = [
-                { id: 1, name: 'Grocery Mart', address: '123 Market St', image: 'https://via.placeholder.com/100' },
-                { id: 2, name: 'Fresh Foods', address: '456 Main Ave', image: 'https://via.placeholder.com/100' },
-                { id: 3, name: 'Quick Groceries', address: '789 Center Blvd', image: 'https://via.placeholder.com/100' },
-            ];
-            setStores(mockStores);
-        }
+        // Mock store data (replace this with a real API call if needed)
+        const mockStores = [
+            { id: 1, name: 'Grocery Mart', address: '123 Market St', image: 'https://via.placeholder.com/100' },
+            { id: 2, name: 'Fresh Foods', address: '456 Main Ave', image: 'https://via.placeholder.com/100' },
+            { id: 3, name: 'Quick Groceries', address: '789 Center Blvd', image: 'https://via.placeholder.com/100' },
+        ];
+        setStores(mockStores);
     };
 
     // Handle ZIP code input change with length restriction
@@ -47,6 +47,21 @@ function App() {
 
     return (
         <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
+            {/* Shopping Cart Icon */}
+            <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+                <button
+                    onClick={() => navigate('/cart')}
+                    style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '50px',
+                    }}
+                >
+                    🛒
+                </button>
+            </div>
+
             <h1>Welcome to Group Delivery!</h1>
             <p>Find your supermarket below</p>
 
@@ -91,7 +106,8 @@ function App() {
                 <h2>Available Stores</h2>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                     {stores.map((store) => (
-                        <div
+                        <
+                        div
                             key={store.id}
                             style={{
                                 width: '200px',
@@ -114,6 +130,44 @@ function App() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function Cart() {
+    const navigate = useNavigate();
+
+    return (
+        <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial, sans-serif' }}>
+            <h1>Shopping Cart</h1>
+            <p>This page will be implemented later.</p>
+            {/* HOME Button */}
+            <button
+                onClick={() => navigate('/')}
+                style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#007BFF',
+                    color: '#fff',
+                    fontSize: '16px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                }}
+            >
+                Home
+            </button>
+        </div>
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/cart" element={<Cart />} />
+            </Routes>
+        </Router>
     );
 }
 
