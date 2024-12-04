@@ -1,73 +1,84 @@
 import React, { useEffect, useState } from 'react';
 import './cart.css'; 
 import { FaTrashAlt } from 'react-icons/fa';
-import { AiOutlinePlus } from 'react-icons/ai'
-
+import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai'; // Plus and Minus icons
 
 // Cart component
-const Cart = ({ title, cartItems, onRemoveItem }) => {
-    return (
-      <div>
-        <h2>{title}</h2>
-        <ul className="cart-list">
-          {cartItems.length === 0 ? (
-            <li className="empty-cart">No items in the cart</li>
-          ) : (
-            cartItems.map((item, index) => (
-              <li key={index} className="cart-item">
-                <img src={item.image} alt={item.name} className="item-image" />
-                <div className="item-details">
-                  <div className="item-name">{item.name}</div>
-                    
+const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity }) => {
+  return (
+    <div>
+      <h2>{title}</h2>
+      <ul className="cart-list">
+        {cartItems.length === 0 ? (
+          <li className="empty-cart">No items in the cart</li>
+        ) : (
+          cartItems.map((item, index) => (
+            <li key={index} className="cart-item">
+              <img src={item.image} alt={item.name} className="item-image" />
+              <div className="item-details">
+                <div className="item-name">{item.name}</div>
+                {/* Quantity Controls */}
+                <div className="quantity-controls">
+                  <button
+                    className="quantity-button"
+                    onClick={() => onDecreaseQuantity(index)}
+                    disabled={item.quantity <= 1} // Disable if quantity is 1
+                  >
+                    <AiOutlineMinus />
+                  </button>
                   <div className="item-quantity">Quantity: {item.quantity}</div>
+                  <button
+                    className="quantity-button"
+                    onClick={() => onIncreaseQuantity(index)}
+                  >
+                    <AiOutlinePlus />
+                  </button>
                 </div>
-                {/* Check if price is valid before calling toFixed */}
-                <div className="item-price">
-                  ${item.price ? item.price.toFixed(2) : '1.00'}
-                </div>
-                <button className="remove-button" onClick={() => onRemoveItem(index)}>
+              </div>
+              {/* Check if price is valid before calling toFixed */}
+              <div className="item-price">
+                ${item.price ? item.price.toFixed(2) : '1.00'}
+              </div>
+              <button className="remove-button" onClick={() => onRemoveItem(index)}>
                 <FaTrashAlt /> {/* Trash can icon */}
               </button>
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
-    );
-  };  
-
-  
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+};
 
 const App = () => {
-    const [individualCart, setIndividualCart] = useState([
-        {
-          name: "Apple",
-          image: "https://via.placeholder.com/50",
-          quantity: 3,
-          price: 1.5,
-        },
-        {
-          name: "Banana",
-          image: "https://via.placeholder.com/50",
-          quantity: 2,
-          price: 0.75,
-        },
-      ]);
-
-      const [sharedCart, setSharedCart] = useState([
-        {
-          name: "Pepper",
-          image: "https://via.placeholder.com/50",
-          quantity: 3,
-          price: 1,
-        },
-        {
-          name: "Tomato",
-          image: "https://via.placeholder.com/50",
-          quantity: 2,
-          price: 0.65,
-        },
-      ]);
+  const [individualCart, setIndividualCart] = useState([
+    {
+      name: "Apple",
+      image: "https://via.placeholder.com/50",
+      quantity: 3,
+      price: 1.5,
+    },
+    {
+      name: "Banana",
+      image: "https://via.placeholder.com/50",
+      quantity: 2,
+      price: 0.75,
+    },
+  ]);
+  const [sharedCart, setSharedCart] = useState([
+    {
+      name: "Pepper",
+      image: "https://via.placeholder.com/50",
+      quantity: 3,
+      price: 1,
+    },
+    {
+      name: "Tomato",
+      image: "https://via.placeholder.com/50",
+      quantity: 2,
+      price: 0.65,
+    },
+  ]);
   const [activeTab, setActiveTab] = useState('individual'); // Tracks which tab is active
 
   // Load individual cart from localStorage if it exists
@@ -97,6 +108,10 @@ const App = () => {
     setActiveTab(tab);
   };
 
+//back button go to homepage
+    const goToHomepage = () => {
+        window.location.href = '/';
+    };
   // Remove item from individual cart
   const removeItemFromIndividualCart = (index) => {
     const newCart = [...individualCart];
@@ -104,52 +119,67 @@ const App = () => {
     setIndividualCart(newCart);
   };
 
+  // Increase item quantity
+  const increaseQuantity = (index) => {
+    const updatedCart = [...individualCart];
+    updatedCart[index].quantity += 1;
+    setIndividualCart(updatedCart);
+  };
+
+  // Decrease item quantity
+  const decreaseQuantity = (index) => {
+    const updatedCart = [...individualCart];
+    if (updatedCart[index].quantity > 1) {
+      updatedCart[index].quantity -= 1;
+      setIndividualCart(updatedCart);
+    }
+  };
 
   return (
     <div>
       {/* Top bar */}
-        <div className="top-bar">
-        <button className="back-arrow" onClick={() => alert('Back button clicked')}>&larr;</button>
+      <div className="top-bar">
+        <button className="back-arrow" onClick={() => goToHomepage()}>&larr;</button>
         <h1 className="shopping-cart-title">Shopping Cart</h1>
-</div>
-
+      </div>
 
       {/* Tab navigation bar */}
       <div className="tabs-bar">
         <div
-          className={`tab ${activeTab === 'individual' ? 'active' : ''}`}
-          onClick={() => handleTabSwitch('individual')}
-        >
-          Individual Order
-        </div>
-        <div
           className={`tab ${activeTab === 'shared' ? 'active' : ''}`}
-          onClick={() => handleTabSwitch('shared')}
+          onClick={() => setActiveTab('shared')}
         >
           Group Order
+        </div>
+        <div
+          className={`tab ${activeTab === 'individual' ? 'active' : ''}`}
+          onClick={() => setActiveTab('individual')}
+        >
+          Individual Order
         </div>
       </div>
 
       {/* Tab content */}
       <div className="tab-content">
-        {activeTab === 'individual' && (
-          <Cart
-            //title="Individual Cart"
-            cartItems={individualCart}
-            onRemoveItem={removeItemFromIndividualCart}
-          />
-        )}
         {activeTab === 'shared' && (
           <Cart
-            //title="Shared Cart"
+            title="Shared Cart"
             cartItems={sharedCart}
             onRemoveItem={() => alert('Cannot remove items from the shared cart in this demo')}
+          />
+        )}
+        {activeTab === 'individual' && (
+          <Cart
+            title="Individual Cart"
+            cartItems={individualCart}
+            onRemoveItem={removeItemFromIndividualCart}
+            onIncreaseQuantity={increaseQuantity}
+            onDecreaseQuantity={decreaseQuantity}
           />
         )}
       </div>
     </div>
   );
-
 };
 
 export default App;

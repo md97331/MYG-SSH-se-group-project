@@ -146,3 +146,30 @@ body {
     background-color: #0056b3;
   }
   
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .quantity-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 4px; /* Minimal padding */
+    font-size: 8px; /* Small font size */
+    cursor: pointer;
+    border-radius: 50%; /* Round buttons */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .quantity-button:disabled {
+    background-color: #e0e0e0;
+    cursor: not-allowed;
+  }
+  
+  .item-quantity {
+    font-size: 8px;
+  }
+  
