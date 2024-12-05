@@ -17,6 +17,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # 2. Install Docker Compose
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+
       # 2. Determine if server/ directory has changes
       - name: Filter paths
         id: filter
