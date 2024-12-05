@@ -18,7 +18,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_DATABASE: ${{ secrets.DB_NAME }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
           MYSQL_USER: ${{ secrets.DB_APP_USER }}
           MYSQL_PASSWORD: ${{ secrets.DB_APP_PASSWORD }}
         ports:
@@ -36,7 +36,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'  # Specify your Python version
+        python-version: '3.9'  # Adjust as needed
 
     - name: Install Dependencies
       run: |
@@ -47,11 +47,18 @@ jobs:
         pip install -r requirements.txt
 
     - name: Wait for MySQL to be Ready
+      timeout-minutes: 2
       run: |
         until mysqladmin ping -h "localhost" --silent; do
           echo "Waiting for MySQL..."
           sleep 5
         done
+
+    - name: Verify MySQL Health
+      if: failure()
+      run: |
+        echo "MySQL failed to start. Fetching logs..."
+        docker logs ${{ job.services.mysql.id }}
 
     - name: Set Environment Variables
       run: |
@@ -67,8 +74,7 @@ jobs:
       run: |
         cd server
         source venv/bin/activate
-        # Assuming you are using Flask-Migrate
-        flask db upgrade
+        flask db upgrade  # Ensure Flask-Migrate is configured
 
     - name: Run Tests
       run: |
@@ -81,4 +87,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: backend-test-results
-        path: server/tests/results/
+        path: server/tests/results/  # Adjust the path as needed
