@@ -60,7 +60,7 @@ jobs:
         if: steps.filter.outputs.server == 'true'
         run: |
           for i in {1..30}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "ancestor=mysql:8.0")) || true
+            status=$(docker inspect --format='{{.State.Health.Status}}' db 2>/dev/null || echo "unavailable")
             if [ "$status" == "healthy" ]; then
               echo "Database is healthy"
               exit 0
