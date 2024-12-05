@@ -1,9 +1,9 @@
+import PropTypes from 'prop-types';
 import React, { useEffect, useState } from 'react';
-import './cart.css';
+import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
-import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai'; // Plus and Minus icons
+import './cart.css';
 
-// Cart component
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
     return (
         <div>
@@ -53,6 +53,24 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
             )}
         </div>
     );
+};
+
+// Prop types validation for Cart component
+Cart.propTypes = {
+    title: PropTypes.string.isRequired,
+    cartItems: PropTypes.arrayOf(
+        PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            image: PropTypes.string.isRequired,
+            quantity: PropTypes.number.isRequired,
+            price: PropTypes.number.isRequired,
+        })
+    ).isRequired,
+    onRemoveItem: PropTypes.func.isRequired,
+    onIncreaseQuantity: PropTypes.func.isRequired,
+    onDecreaseQuantity: PropTypes.func.isRequired,
+    onCheckout: PropTypes.func.isRequired,
+    isIndividualTab: PropTypes.bool.isRequired,
 };
 
 const App = () => {
@@ -109,9 +127,9 @@ const App = () => {
     }, [individualCart]);
 
     // Handle switching tabs
-    const handleTabSwitch = (tab) => {
-        setActiveTab(tab);
-    };
+    // const handleTabSwitch = (tab) => {
+    //     setActiveTab(tab);
+    // };
 
     //back button go to homepage
     const goToHomepage = () => {
