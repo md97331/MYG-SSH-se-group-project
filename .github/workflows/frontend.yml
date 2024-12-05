@@ -1,6 +1,6 @@
 # .github/workflows/frontend.yml
 
-name: Build and Test Frontend / build (push)
+name: Build and Test Frontend
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Build and Test Frontend
     runs-on: ubuntu-latest
 
     steps:

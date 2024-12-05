@@ -1,6 +1,6 @@
 # .github/workflows/backend.yml
 
-name: Build and Test Backend / build (push)
+name: Build and Test Backend
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Build and Test Backend
     runs-on: ubuntu-latest
 
     steps:
