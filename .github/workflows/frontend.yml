@@ -5,10 +5,14 @@ on:
     branches:
       - main
       - CICDcreation
+      - YFrontEnd
+      - GFrontEnd
   pull_request:
     branches:
       - main
       - CICDcreation
+      - YFrontEnd
+      - GFrontEnd
           
 jobs:
   build:
