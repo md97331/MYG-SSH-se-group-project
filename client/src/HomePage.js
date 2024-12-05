@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import StoresPage from './StoresPage'; // Import StoresPage
 import Cart from './cart'; // Import Cart
-import Profile from './Profile'; // Import Profile
+//import Profile from './Profile'; // Import Profile
 
 function HomePage() {
     const [currentPage, setCurrentPage] = useState('home'); // Tracks the current page
