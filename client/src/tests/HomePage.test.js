@@ -1,8 +1,12 @@
+import React from 'react';
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import HomePage from '../HomePage'; // Adjust path if needed
+import axios from 'axios';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+jest.mock('axios'); // Mock axios calls
+
+test('renders HomePage correctly', () => {
+    render(<HomePage />);
+    const headingElement = screen.getByText(/Welcome to Group Delivery!/i);
+    expect(headingElement).toBeInTheDocument();
 });

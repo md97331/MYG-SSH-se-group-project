@@ -1,9 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
 
-const StoresPage = ({ addToCart }) => {
-    const navigate = useNavigate(); // Initialize the navigation hook
-
+const StoresPage = ({ addToCart, goToHome, goToCart }) => {
     const categories = {
         Fruits: [
             { id: 1, name: 'Apple', price: 1.5, image: 'https://via.placeholder.com/100' },
@@ -56,7 +53,7 @@ const StoresPage = ({ addToCart }) => {
             {/* Home Button with Home Icon */}
             <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
                 <button
-                    onClick={() => navigate('/')}
+                    onClick={goToHome}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',
@@ -71,7 +68,7 @@ const StoresPage = ({ addToCart }) => {
             {/* Shopping Cart Icon */}
             <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
                 <button
-                    onClick={() => navigate('/cart')}
+                    onClick={goToCart}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',

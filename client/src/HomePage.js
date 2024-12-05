@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import StoresPage from './StoresPage'; // Import the new StoresPage component
+import StoresPage from './StoresPage'; // Import StoresPage
+import Cart from './cart'; // Import Cart
+import Profile from './Profile'; // Import Profile
 
-function Home() {
+function HomePage() {
+    const [currentPage, setCurrentPage] = useState('home'); // Tracks the current page
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState(''); // Error message state for ZIP code validation
-    const navigate = useNavigate();
+    const [cart, setCart] = useState([]); // Cart state
 
     // Fetch initial message from Flask backend
     useEffect(() => {
@@ -46,12 +48,45 @@ function Home() {
         }
     };
 
+    const addToCart = (product) => {
+        setCart((prevCart) => [...prevCart, product]);
+    };
+
+    // Render the appropriate page based on `currentPage`
+    if (currentPage === 'stores') {
+        return <StoresPage addToCart={addToCart} goToHome={() => setCurrentPage('home')} goToCart={() => setCurrentPage('cart')} />;
+    }
+
+    if (currentPage === 'cart') {
+        return <Cart cart={cart} goToHome={() => setCurrentPage('home')} />;
+    }
+
+    if (currentPage === 'profile') {
+        return <Profile goToHome={() => setCurrentPage('home')} />;
+    }
+
+    // Render the home page
     return (
         <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
+            {/* Profile Icon */}
+            <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
+                <button
+                    onClick={() => setCurrentPage('profile')}
+                    style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '30px',
+                    }}
+                >
+                    👤
+                </button>
+            </div>
+
             {/* Shopping Cart Icon */}
             <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
                 <button
-                    onClick={() => navigate('/cart')}
+                    onClick={() => setCurrentPage('cart')}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',
@@ -104,7 +139,7 @@ function Home() {
 
             {/* Navigate to Stores Page */}
             <button
-                onClick={() => navigate('/stores')}
+                onClick={() => setCurrentPage('stores')}
                 style={{
                     padding: '10px 20px',
                     backgroundColor: '#28a745',
@@ -147,51 +182,6 @@ function Home() {
                 </div>
             </div>
         </div>
-    );
-}
-
-function Cart() {
-    const navigate = useNavigate();
-
-    return (
-        <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial, sans-serif' }}>
-            <h1>Shopping Cart</h1>
-            <p>This page will be implemented later.</p>
-            {/* HOME Button */}
-            <button
-                onClick={() => navigate('/')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#007BFF',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                }}
-            >
-                Home
-            </button>
-        </div>
-    );
-}
-
-function HomePage() {
-    const [cart, setCart] = useState([]);
-
-    const addToCart = (product) => {
-        setCart((prevCart) => [...prevCart, product]);
-    };
-
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/stores" element={<StoresPage addToCart={addToCart} />} />
-            </Routes>
-        </Router>
     );
 }
 
