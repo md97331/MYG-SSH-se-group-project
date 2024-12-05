@@ -1,44 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import StoresPage from './StoresPage'; // Import the new StoresPage component
+import './HomePage.css';
 
-function Home() {
+function HomePage() {
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
-    const [message, setMessage] = useState('');
-    const [error, setError] = useState(''); // Error message state for ZIP code validation
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // Fetch initial message from Flask backend
-    useEffect(() => {
-        axios.get('http://localhost:5000/api/message')
-            .then((response) => {
-                setMessage(response.data.message);
-            })
-            .catch((error) => {
-                console.error('Error fetching message:', error);
-            });
-    }, []);
-
-    // Handle ZIP code submission
-    const handleZipSubmit = () => {
+    const handleZipSubmit = async () => {
         if (zipCode.length > 7) {
             setError('ZIP code cannot exceed 7 characters.');
             return;
         }
-        setError(''); // Clear any previous errors
-
-        // Mock store data (replace this with a real API call if needed)
-        const mockStores = [
-            { id: 1, name: 'Grocery Mart', address: '123 Market St', image: 'https://via.placeholder.com/100' },
-            { id: 2, name: 'Fresh Foods', address: '456 Main Ave', image: 'https://via.placeholder.com/100' },
-            { id: 3, name: 'Quick Groceries', address: '789 Center Blvd', image: 'https://via.placeholder.com/100' },
-        ];
-        setStores(mockStores);
+        setError('');
+        try {
+            const response = await axios.get('http://localhost:5001/api/supermarkets');
+            const allStores = response.data.supermarkets;
+            if (allStores.length === 0) {
+                setStores([]);
+                return;
+            }
+            setStores(allStores.sort(() => 0.5 - Math.random()).slice(0, 3));
+        } catch {
+            setError('Failed to fetch supermarkets. Please try again later.');
+        }
     };
 
-    // Handle ZIP code input change with length restriction
     const handleZipChange = (e) => {
         const value = e.target.value;
         if (value.length <= 7) {
@@ -47,8 +36,7 @@ function Home() {
     };
 
     return (
-        <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
-            {/* Shopping Cart Icon */}
+        <div className="home-container">
             <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
                 <button
                     onClick={() => navigate('/cart')}
@@ -62,136 +50,48 @@ function Home() {
                     🛒
                 </button>
             </div>
-
             <h1>Welcome to Group Delivery!</h1>
-            <p>Find your supermarket below</p>
-
-            {/* Location Input */}
-            <div style={{ marginTop: '30px' }}>
+            <div className="location-input">
                 <h2>Enter Your Location</h2>
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
-                    <span role="img" aria-label="location" style={{ fontSize: '24px' }}>📍</span>
+                <div className="input-group">
+                    <span className="location-icon" role="img" aria-label="location">📍</span>
                     <input
                         type="text"
                         placeholder="Enter ZIP Code"
                         value={zipCode}
                         onChange={handleZipChange}
-                        style={{
-                            padding: '10px',
-                            fontSize: '16px',
-                            border: '1px solid #ccc',
-                            borderRadius: '5px',
-                        }}
+                        className="zip-input"
                     />
                     <button
                         onClick={handleZipSubmit}
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#007BFF',
-                            color: '#fff',
-                            fontSize: '16px',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                        }}
+                        className="submit-button"
                     >
                         Submit
                     </button>
                 </div>
-                {/* Display error message */}
-                {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+                {error && <p className="error-message">{error}</p>}
             </div>
-
-            {/* Navigate to Stores Page */}
-            <button
-                onClick={() => navigate('/stores')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                }}
-            >
-                Visit Store
-            </button>
-
-            {/* Display Stores */}
-            <div style={{ marginTop: '40px' }}>
-                <h2>Available Stores</h2>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                    {stores.map((store) => (
-                        <div
-                            key={store.id}
-                            style={{
-                                width: '200px',
-                                padding: '20px',
-                                border: '1px solid #ccc',
-                                borderRadius: '10px',
-                                textAlign: 'center',
-                                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                            }}
-                        >
-                            <img
-                                src={store.image}
-                                alt={store.name}
-                                style={{ width: '100px', height: '100px', borderRadius: '10px' }}
-                            />
-                            <h3 style={{ margin: '10px 0' }}>{store.name}</h3>
-                            <p style={{ color: '#555' }}>{store.address}</p>
-                        </div>
-                    ))}
+            {stores.length > 0 && (
+                <div className="stores-section">
+                    <h2>Available Stores</h2>
+                    <div className="stores-list">
+                        {stores.map((store) => (
+                            <div
+                                key={store.supermarket_id}
+                                className="store-card"
+                                onClick={() => navigate(`/stores/${store.supermarket_id}`)}
+                            >
+                                <h3 className="store-name">{store.name}</h3>
+                                <p>{store.location}</p>
+                                <button className="view-products-button">
+                                    View Products
+                                </button>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
-    );
-}
-
-function Cart() {
-    const navigate = useNavigate();
-
-    return (
-        <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'Arial, sans-serif' }}>
-            <h1>Shopping Cart</h1>
-            <p>This page will be implemented later.</p>
-            {/* HOME Button */}
-            <button
-                onClick={() => navigate('/')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#007BFF',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                }}
-            >
-                Home
-            </button>
-        </div>
-    );
-}
-
-function HomePage() {
-    const [cart, setCart] = useState([]);
-
-    const addToCart = (product) => {
-        setCart((prevCart) => [...prevCart, product]);
-    };
-
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/stores" element={<StoresPage addToCart={addToCart} />} />
-            </Routes>
-        </Router>
     );
 }
 

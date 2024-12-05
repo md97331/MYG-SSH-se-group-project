@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import './cart.css';
+import './Cart.css';
 import { FaTrashAlt } from 'react-icons/fa';
 import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai'; // Plus and Minus icons
 

@@ -69,3 +69,4 @@ coverage.xml
 *.cache
 *.pytest_cache/
 client/.parcel-cache/
+package-lock.json
