@@ -74,10 +74,6 @@ LOCK TABLES `supermarkets` WRITE;
 INSERT INTO `supermarkets` VALUES (1,'Supermarket A','A local supermarket offering fresh produce, dairy, and household items.','123 Market Street, Birmingham, UK','8:00 AM - 10:00 PM','+44 123 456 7890'),(2,'Supermarket B','A budget-friendly store with a wide range of pantry and frozen food options.','45 Budget Road, Birmingham, UK','9:00 AM - 9:00 PM','+44 987 654 3210'),(3,'Supermarket C','A premium supermarket focusing on organic and gourmet products.','22 Gourmet Avenue, Birmingham, UK','7:00 AM - 11:00 PM','+44 555 678 9101'),(4,'Supermarket D','Convenient neighborhood store with a mix of essentials and snacks.','10 Essentials Lane, Birmingham, UK','8:00 AM - 8:00 PM','+44 444 333 2222'),(5,'Supermarket E','A family-friendly store with a focus on household items and beverages.','67 Family Park, Birmingham, UK','10:00 AM - 6:00 PM','+44 777 888 9999');
 /*!40000 ALTER TABLE `supermarkets` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Dumping routines for database 'supermarkets_db'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -88,4 +84,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-05  1:40:09
+-- Dump completed on 2024-12-04 23:47:31
