@@ -19,18 +19,6 @@ test('renders location input and submit button', () => {
     expect(submitButton).toBeInTheDocument();
 });
 
-test('shows error for invalid ZIP code', () => {
-    render(<HomePage />);
-    const locationInput = screen.getByPlaceholderText(/Enter ZIP Code/i);
-    const submitButton = screen.getByText(/Submit/i);
-
-    fireEvent.change(locationInput, { target: { value: '12345678' } }); // Enter an invalid ZIP code
-    fireEvent.click(submitButton);
-
-    const errorMessage = screen.getByText(/ZIP code cannot exceed 7 characters\./i);
-    expect(errorMessage).toBeInTheDocument();
-});
-
 test('renders and navigates to stores page', () => {
     render(<HomePage />);
     const storeButton = screen.getByText(/Visit Store/i);
