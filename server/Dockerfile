@@ -1,20 +1,21 @@
-# backend/Dockerfile.dev
-
 # Use the official Python image as a base
 FROM python:3.10-slim
 
 # Set the working directory in the container
-WORKDIR /src/app
+WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire server directory into the container
-COPY . .
+# Copy necessary directories into the container
+COPY ./src /app/src
+COPY ./config /app/config
+COPY ./db /app/db
+COPY ./tests /app/tests
 
-# Set environment variables
-ENV FLASK_APP=src/app.py
+# Set environment variables for Flask
+ENV FLASK_APP=/app/src/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5001
 
