@@ -1,4 +1,6 @@
-name: Backend CI
+# .github/workflows/backend.yml
+
+name: Build and Test Backend
 
 on:
   push:
