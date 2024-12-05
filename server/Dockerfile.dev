@@ -1,0 +1,26 @@
+# backend/Dockerfile.dev
+
+# Use the official Python image as a base
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_ENV=development
+ENV FLASK_APP=app.py
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire server directory into the container
+COPY . .
+
+# Expose port 5001 for Flask
+EXPOSE 5001
+
+# Command to run the Flask app with auto-reload enabled
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5001"]

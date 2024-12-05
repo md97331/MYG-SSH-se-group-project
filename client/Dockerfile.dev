@@ -1,5 +1,7 @@
+# client/Dockerfile.dev
+
 # Use an official Node.js image as the base image
-FROM node:16
+FROM node:20
 
 # Set the working directory
 WORKDIR /app
@@ -13,15 +15,11 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Build the React app for production
-RUN npm run build
-
-# Use a lightweight web server to serve the React app
-FROM nginx:alpine
-COPY --from=0 /app/build /usr/share/nginx/html
+# Set environment variable to enable polling for file changes (important for Docker)
+ENV CHOKIDAR_USEPOLLING=true
 
 # Expose the port the app runs on
-EXPOSE 80
+EXPOSE 3000
 
-# Start Nginx server
-CMD ["nginx", "-g", "daemon off;"]
+# Start the React development server
+CMD ["npm", "start"]

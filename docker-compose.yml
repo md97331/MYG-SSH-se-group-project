@@ -4,6 +4,7 @@ services:
   flask:
     build:
       context: ./server
+      dockerfile: Dockerfile.dev
     ports:
       - "5001:5001"
     environment:
@@ -11,11 +12,16 @@ services:
       - DB_USER=root
       - DB_PASSWORD=73961200
       - DB_NAME=supermarkets_db
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
     depends_on:
       db:
         condition: service_healthy
     networks:
       - app-network
+    volumes:
+      - ./server:/app
+      - /app/__pycache__
 
   db:
     image: mysql:8.0
@@ -26,7 +32,7 @@ services:
       MYSQL_DATABASE: supermarkets_db
     volumes:
       - db-data:/var/lib/mysql  # Persistent volume for MySQL data
-      - ./server/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
+      - ./server/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # SQL script mapping
     networks:
       - app-network
     healthcheck:
@@ -38,10 +44,18 @@ services:
   react:
     build:
       context: ./client
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
+      - "3000:3000"
     networks:
       - app-network
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    stdin_open: true
+    tty: true
 
 networks:
   app-network:
