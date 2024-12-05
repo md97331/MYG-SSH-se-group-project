@@ -15,6 +15,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./server/src:/app/src  # Mount source code for live updates
+      - ./server/config:/app/config
+      - ./server/db:/app/db
     networks:
       - app-network
 
@@ -27,7 +31,7 @@ services:
       MYSQL_DATABASE: supermarkets_db
     volumes:
       - db-data:/var/lib/mysql  # Persistent volume for MySQL data
-      - ./server/db/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
+      - ./db/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
     networks:
       - app-network
     healthcheck:
