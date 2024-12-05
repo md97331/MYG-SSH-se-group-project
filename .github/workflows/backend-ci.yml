@@ -46,8 +46,10 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
 
+    
+
     - name: Wait for MySQL to be Ready
-      timeout-minutes: 2
+      timeout-minutes: 5
       run: |
         until mysqladmin ping -h "localhost" --silent; do
           echo "Waiting for MySQL..."
@@ -60,21 +62,19 @@ jobs:
         echo "MySQL failed to start. Fetching logs..."
         docker logs ${{ job.services.mysql.id }}
 
+    - name: Test MySQL Connection
+      run: |
+        mysql -h mysql -P 3306 -u "${{ secrets.DB_APP_USER }}" -p"${{ secrets.DB_APP_PASSWORD }}" -e "SHOW DATABASES;"
+
     - name: Set Environment Variables
       run: |
-        echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+        echo "DB_HOST=mysql" >> $GITHUB_ENV
         echo "DB_PORT=${{ secrets.DB_PORT }}" >> $GITHUB_ENV
         echo "DB_USER=${{ secrets.DB_APP_USER }}" >> $GITHUB_ENV
         echo "DB_PASSWORD=${{ secrets.DB_APP_PASSWORD }}" >> $GITHUB_ENV
         echo "DB_NAME=${{ secrets.DB_NAME }}" >> $GITHUB_ENV
         echo "FLASK_ENV=${{ secrets.FLASK_ENV }}" >> $GITHUB_ENV
         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
-
-    - name: Apply Database Migrations
-      run: |
-        cd server
-        source venv/bin/activate
-        flask db upgrade  # Ensure Flask-Migrate is configured
 
     - name: Run Tests
       run: |
