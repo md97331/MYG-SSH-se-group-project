@@ -63,10 +63,13 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Debug Database Container
+        run: docker-compose ps
+
       - name: Wait for Database to be Healthy
         if: steps.filter.outputs.server == 'true'
         run: |
-          for i in {1..30}; do
+          for i in {1..10}; do
             status=$(docker-compose ps | grep db | grep -i "healthy" || true)
             if [ -n "$status" ]; then
               echo "Database is healthy"
@@ -78,7 +81,8 @@ jobs:
           echo "Database did not become healthy in time."
           exit 1
 
-      - name: Check Database Logs
+      - name: Capture Database Logs
+        if: failure()
         run: docker-compose logs db
 
       - name: Run Backend Tests
