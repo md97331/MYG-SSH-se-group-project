@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - CICDcreation
+      - GFrontEnd
   pull_request:
     branches:
       - main
       - CICDcreation
+      - GFrontEnd
           
 jobs:
   build:
