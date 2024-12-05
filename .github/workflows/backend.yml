@@ -1,0 +1,121 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      -'server/**'
+
+  pull_request:
+    paths:
+      -'server/**'
+
+jobs:
+  build:
+    name: Build and Test Backend
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mysql:8.0
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DB_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.DB_NAME }}
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=5
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 3. Cache Python dependencies to speed up builds
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./server/venv
+          key: ${{ runner.os }}-python-${{ hashFiles('**/server/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
+
+      # 4. Install dependencies
+      - name: Install Dependencies
+        working-directory: ./server
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 5. Wait for Database to be Healthy
+      - name: Wait for Database to be Healthy
+        run: |
+          for i in {1..30}; do
+            status=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "ancestor=mysql:8.0")) || true
+            if [ "$status" == "healthy" ]; then
+              echo "Database is healthy"
+              exit 0
+            fi
+            echo "Waiting for database to be healthy..."
+            sleep 5
+          done
+          echo "Database did not become healthy in time."
+          exit 1
+
+      # 6. Run Backend Tests
+      - name: Run Backend Tests
+        working-directory: ./server
+        env:
+          DB_HOST: localhost
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          source venv/bin/activate
+          
+          pytest
+
+      # 7. Build Backend Docker Image
+      - name: Build Backend Docker Image
+        working-directory: ./server
+        run: docker build -t backend:latest .
+
+      # 8. Run Backend Docker Container
+      - name: Run Backend Container
+        run: docker run -d -p 5001:5001 --name backend_test -e DB_HOST=localhost -e DB_USER=${{ secrets.DB_USER }} -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} -e DB_NAME=${{ secrets.DB_NAME }} -e DB_PORT=${{ secrets.DB_PORT }} backend:latest
+
+      # 9. Wait for Backend to be Ready
+      - name: Wait for Backend to be Ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:5001/health > /dev/null; then
+              echo "Backend is up!"
+              exit 0
+            fi
+            echo "Waiting for backend to be ready..."
+            sleep 5
+          done
+          echo "Backend did not become ready in time."
+          exit 1
+
+      # 10. Verify the Backend is Serving
+      - name: Verify Backend is Serving
+        run: |
+          curl -f http://localhost:5001/health || { echo "Backend not responding"; exit 1; }
+
+      # 11. Clean up Docker container
+      - name: Tear Down Backend Container
+        if: always()
+        run: docker rm -f backend_test || true
