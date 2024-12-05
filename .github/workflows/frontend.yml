@@ -1,4 +1,6 @@
-name: Frontend CI
+# .github/workflows/frontend.yml
+
+name: Build and Test Frontend
 
 on:
   push:
