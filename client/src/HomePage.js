@@ -61,9 +61,9 @@ function HomePage() {
         return <Cart cart={cart} goToHome={() => setCurrentPage('home')} />;
     }
 
-    if (currentPage === 'profile') {
-        return <Profile goToHome={() => setCurrentPage('home')} />;
-    }
+    // if (currentPage === 'profile') {
+    //     return <Profile goToHome={() => setCurrentPage('home')} />;
+    // }
 
     // Render the home page
     return (
