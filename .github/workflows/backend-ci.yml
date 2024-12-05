@@ -28,9 +28,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-        # Ensure the init.sql is correctly mounted
-        volumes:
-          - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
 
     steps:
     - name: Checkout Repository
@@ -48,12 +45,6 @@ jobs:
         source venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Generate MySQL Initialization Script
-      run: |
-        echo "CREATE USER IF NOT EXISTS '${{ secrets.DB_APP_USER }}'@'%' IDENTIFIED BY '${{ secrets.DB_APP_PASSWORD }}';" > server/init.sql
-        echo "GRANT ALL PRIVILEGES ON \`${{ secrets.DB_NAME }}\`.* TO '${{ secrets.DB_APP_USER }}'@'%';" >> server/init.sql
-        echo "FLUSH PRIVILEGES;" >> server/init.sql
 
     - name: Wait for MySQL to be Ready
       timeout-minutes: 2
