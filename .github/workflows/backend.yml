@@ -60,8 +60,8 @@ jobs:
         if: steps.filter.outputs.server == 'true'
         run: |
           for i in {1..30}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' db 2>/dev/null || echo "unavailable")
-            if [ "$status" == "healthy" ]; then
+            status=$(docker-compose ps | grep db | grep -i "healthy" || true)
+            if [ -n "$status" ]; then
               echo "Database is healthy"
               exit 0
             fi
@@ -70,6 +70,9 @@ jobs:
           done
           echo "Database did not become healthy in time."
           exit 1
+
+      - name: Check Database Logs
+        run: docker-compose logs db
 
       - name: Run Backend Tests
         if: steps.filter.outputs.server == 'true'
