@@ -1,6 +1,6 @@
 # .github/workflows/frontend.yml
 
-name: Build and Test Frontend
+name: Build and Test Frontend / build (push)
 
 on:
   push:
