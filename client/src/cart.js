@@ -109,9 +109,9 @@ const App = () => {
     }, [individualCart]);
 
     // Handle switching tabs
-    const handleTabSwitch = (tab) => {
-        setActiveTab(tab);
-    };
+    // const handleTabSwitch = (tab) => {
+    //     setActiveTab(tab);
+    // };
 
     //back button go to homepage
     const goToHomepage = () => {
