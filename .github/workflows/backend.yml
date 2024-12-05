@@ -1,3 +1,5 @@
+# .github/workflows/backend.yml
+
 name: Build and Test Backend
 
 on:
@@ -15,7 +17,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. Filter for changes in server directory
+      # 2. Determine if server/ directory has changes
       - name: Filter paths
         id: filter
         uses: dorny/paths-filter@v2
@@ -29,17 +31,36 @@ jobs:
         if: steps.filter.outputs.server != 'true'
         run: echo "No changes in server/, skipping Backend CI."
 
-      # 4. Start Docker Compose if server/ has changes
-      - name: Start Docker Compose
+      # 4. Continue only if server/ has changes
+      - name: Set up Python
         if: steps.filter.outputs.server == 'true'
-        run: docker-compose -f docker-compose.yml up -d --build
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      # 5. Wait for Database to be Healthy
+      - name: Cache Python dependencies
+        if: steps.filter.outputs.server == 'true'
+        uses: actions/cache@v3
+        with:
+          path: ./server/venv
+          key: ${{ runner.os }}-python-${{ hashFiles('**/server/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-
+
+      - name: Install Dependencies
+        if: steps.filter.outputs.server == 'true'
+        working-directory: ./server
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Wait for Database to be Healthy
         if: steps.filter.outputs.server == 'true'
         run: |
           for i in {1..30}; do
-            status=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps --filter "name=db" -q))
+            status=$(docker inspect --format='{{.State.Health.Status}}' $(docker ps -q --filter "ancestor=mysql:8.0")) || true
             if [ "$status" == "healthy" ]; then
               echo "Database is healthy"
               exit 0
@@ -50,12 +71,29 @@ jobs:
           echo "Database did not become healthy in time."
           exit 1
 
-      # 6. Run Backend Tests
       - name: Run Backend Tests
         if: steps.filter.outputs.server == 'true'
-        run: docker exec flask pytest /app/tests
+        working-directory: ./server
+        env:
+          DB_HOST: localhost
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        run: |
+          source venv/bin/activate
+          pytest
 
-      # 7. Tear Down Docker Compose
-      - name: Tear Down
+      - name: Build Backend Docker Image
+        if: steps.filter.outputs.server == 'true'
+        working-directory: ./server
+        run: docker build -t backend:latest .
+
+      - name: Run Backend Docker Container
+        if: steps.filter.outputs.server == 'true'
+        run: docker run -d -p 8000:8000 --name backend_test backend:latest
+
+      - name: Tear Down Backend Docker Container
         if: always()
-        run: docker-compose -f docker-compose.yml down
+        run: docker rm -f backend_test || true
