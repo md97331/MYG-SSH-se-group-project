@@ -13,9 +13,9 @@ def get_db_connection():
     return mysql.connector.connect(
         host=os.getenv("DB_HOST", "db"), 
         port=int(os.getenv("DB_PORT", 3306)),
-        user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", "73961200"),
-        database=os.getenv("DB_NAME", "supermarkets_db")
+        user=os.getenv("DB_USER", ""),
+        password=os.getenv("DB_PASSWORD", ""),
+        database=os.getenv("DB_NAME", "")
     )
 
 def execute_query(query, params=None, fetchone=False):
@@ -120,6 +120,24 @@ def get_product_price(supermarket_id):
             return jsonify({"price": price['price']}), 200
         else:
             return jsonify({"error": "Product not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/supermarkets_with_products', methods=['GET'])
+def get_supermarkets_with_products():
+    try:
+        supermarkets = execute_query("SELECT * FROM supermarkets")
+        for supermarket in supermarkets:
+            products = execute_query("SELECT * FROM products WHERE supermarket_id = %s", (supermarket['supermarket_id'],))
+            # Group products by category
+            categories = {}
+            for product in products:
+                category = product['category']
+                if category not in categories:
+                    categories[category] = []
+                categories[category].append(product)
+            supermarket['categories'] = categories
+        return jsonify({"supermarkets": supermarkets}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
