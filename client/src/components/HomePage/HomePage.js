@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 //import axios from 'axios';
-import StoresPage from './StoresPage'; // Import StoresPage
-import Cart from './cart'; // Import Cart
+import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
+import Cart from '../Cart/cart'; // Import Cart
 //import Profile from './Profile'; // Import Profile
 
 function HomePage() {

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import HomePage from '../HomePage';
+import HomePage from '../components/HomePage/HomePage';
 
 test('renders HomePage correctly', () => {
     render(<HomePage />);
