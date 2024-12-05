@@ -1,55 +1,51 @@
-import React, { useState } from 'react';
-//import axios from 'axios';
-import StoresPage from './StoresPage'; // Import StoresPage
-import Cart from './cart'; // Import Cart
-//import Profile from './Profile'; // Import Profile
+import React from 'react';
 
-function HomePage() {
-    const [currentPage, setCurrentPage] = useState('home'); // Tracks the current page
-    const [zipCode, setZipCode] = useState('');
-    const [stores, setStores] = useState([]);
-    //const [message, setMessage] = useState('');
-    const [error, setError] = useState(''); // Error message state for ZIP code validation
-    const [cart, setCart] = useState([]); // Cart state
-
-    // Fetch initial message from Flask backend
-    // useEffect(() => {
-    //     axios.get('http://localhost:5000/api/message')
-    //         .then((response) => {
-    //             setMessage(response.data.message);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error fetching message:', error);
-    //         });
-    // }, []);
-
-    // Handle ZIP code submission
-    const handleZipSubmit = () => {
-        if (zipCode.length > 7) {
-            setError('ZIP code cannot exceed 7 characters.');
-            return;
-        }
-        setError(''); // Clear any previous errors
-
-        // Mock store data (replace this with a real API call if needed)
-        const mockStores = [
-            { id: 1, name: 'Grocery Mart', address: '123 Market St', image: 'https://via.placeholder.com/100' },
-            { id: 2, name: 'Fresh Foods', address: '456 Main Ave', image: 'https://via.placeholder.com/100' },
-            { id: 3, name: 'Quick Groceries', address: '789 Center Blvd', image: 'https://via.placeholder.com/100' },
-        ];
-        setStores(mockStores);
-    };
-
-    // Handle ZIP code input change with length restriction
-    const handleZipChange = (e) => {
-        const value = e.target.value;
-        if (value.length <= 7) {
-            setZipCode(value);
-        }
-    };
-
-    const addToCart = (product) => {
-        setCart((prevCart) => [...prevCart, product]);
+const StoresPage = ({ addToCart, goToHome, goToCart }) => {
+    const categories = {
+        Fruits: [
+            { id: 1, name: 'Apple', price: 1.5, image: 'https://via.placeholder.com/100' },
+            { id: 2, name: 'Banana', price: 1.0, image: 'https://via.placeholder.com/100' },
+            { id: 3, name: 'Orange', price: 2.0, image: 'https://via.placeholder.com/100' },
+            { id: 4, name: 'Grapes', price: 3.0, image: 'https://via.placeholder.com/100' },
+            { id: 5, name: 'Strawberry', price: 4.0, image: 'https://via.placeholder.com/100' },
+            { id: 6, name: 'Pineapple', price: 3.5, image: 'https://via.placeholder.com/100' },
+            { id: 7, name: 'Mango', price: 2.5, image: 'https://via.placeholder.com/100' },
+        ],
+        Vegetables: [
+            { id: 8, name: 'Carrot', price: 1.2, image: 'https://via.placeholder.com/100' },
+            { id: 9, name: 'Broccoli', price: 2.5, image: 'https://via.placeholder.com/100' },
+            { id: 10, name: 'Potato', price: 0.8, image: 'https://via.placeholder.com/100' },
+            { id: 11, name: 'Spinach', price: 1.5, image: 'https://via.placeholder.com/100' },
+            { id: 12, name: 'Tomato', price: 2.0, image: 'https://via.placeholder.com/100' },
+            { id: 13, name: 'Onion', price: 1.0, image: 'https://via.placeholder.com/100' },
+            { id: 14, name: 'Peppers', price: 2.5, image: 'https://via.placeholder.com/100' },
+        ],
+        Dairy: [
+            { id: 15, name: 'Milk', price: 3.0, image: 'https://via.placeholder.com/100' },
+            { id: 16, name: 'Cheese', price: 4.0, image: 'https://via.placeholder.com/100' },
+            { id: 17, name: 'Butter', price: 2.5, image: 'https://via.placeholder.com/100' },
+            { id: 18, name: 'Yogurt', price: 1.0, image: 'https://via.placeholder.com/100' },
+            { id: 19, name: 'Cream', price: 2.0, image: 'https://via.placeholder.com/100' },
+            { id: 20, name: 'Ice Cream', price: 5.0, image: 'https://via.placeholder.com/100' },
+        ],
+        Meats: [
+            { id: 21, name: 'Chicken Breast', price: 5.0, image: 'https://via.placeholder.com/100' },
+            { id: 22, name: 'Ground Beef', price: 6.0, image: 'https://via.placeholder.com/100' },
+            { id: 23, name: 'Pork Chops', price: 4.5, image: 'https://via.placeholder.com/100' },
+            { id: 24, name: 'Salmon', price: 8.0, image: 'https://via.placeholder.com/100' },
+            { id: 25, name: 'Turkey Slices', price: 3.5, image: 'https://via.placeholder.com/100' },
+            { id: 26, name: 'Lamb Chops', price: 10.0, image: 'https://via.placeholder.com/100' },
+            { id: 27, name: 'Bacon', price: 4.0, image: 'https://via.placeholder.com/100' },
+        ],
+        Snacks: [
+            { id: 28, name: 'Chips', price: 2.0, image: 'https://via.placeholder.com/100' },
+            { id: 29, name: 'Chocolate Bar', price: 1.5, image: 'https://via.placeholder.com/100' },
+            { id: 30, name: 'Popcorn', price: 3.0, image: 'https://via.placeholder.com/100' },
+            { id: 31, name: 'Cookies', price: 4.0, image: 'https://via.placeholder.com/100' },
+            { id: 32, name: 'Nuts', price: 5.0, image: 'https://via.placeholder.com/100' },
+            { id: 33, name: 'Pretzels', price: 2.5, image: 'https://via.placeholder.com/100' },
+            { id: 34, name: 'Granola Bars', price: 3.5, image: 'https://via.placeholder.com/100' },
+        ],
     };
 
     // Render the appropriate page based on `currentPage`
@@ -71,7 +67,7 @@ function HomePage() {
             {/* Profile Icon */}
             <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
                 <button
-                    onClick={() => setCurrentPage('profile')}
+                    onClick={goToHome}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',
@@ -86,7 +82,7 @@ function HomePage() {
             {/* Shopping Cart Icon */}
             <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
                 <button
-                    onClick={() => setCurrentPage('cart')}
+                    onClick={goToCart}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',

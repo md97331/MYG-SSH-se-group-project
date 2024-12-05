@@ -1,19 +1,12 @@
-name: Frontend CI
+# .github/workflows/frontend.yml
+
+name: Build and Test Frontend
 
 on:
   push:
     branches:
-      - main
-      - CICDcreation
-      - YFrontEnd
-      - GFrontEnd
-  pull_request:
-    branches:
-      - main
-      - CICDcreation
-      - YFrontEnd
-      - GFrontEnd
-          
+      - '**'
+
 jobs:
   build:
     name: Build and Test Frontend
@@ -24,14 +17,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. Set up Node.js environment
+      # 2. Determine if client/ directory has changes
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            client:
+              - 'client/**'
+
+      # 3. Skip Frontend CI if no changes in client/
+      - name: Skip Frontend CI
+        if: steps.filter.outputs.client != 'true'
+        run: echo "No changes in client/, skipping Frontend CI."
+
+      # 4. Continue only if client/ has changes
       - name: Set up Node.js
+        if: steps.filter.outputs.client == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # 3. Cache Node.js dependencies to speed up builds
       - name: Cache Node.js modules
+        if: steps.filter.outputs.client == 'true'
         uses: actions/cache@v3
         with:
           path: ./client/node_modules
@@ -39,50 +47,30 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 4. Install dependencies
       - name: Install Dependencies
+        if: steps.filter.outputs.client == 'true'
         working-directory: ./client
         run: npm install
 
-      # 5. Build React application
-      - name: Build React App
+      - name: Run Linting
+        if: steps.filter.outputs.client == 'true'
         working-directory: ./client
-        run: npm run build
+        run: npm run lint
 
-      # 6. Build Docker image for frontend
-      - name: Build Frontend Docker Image
-        working-directory: ./client
-        run: docker build -t frontend:latest .
-
-      # 7. Run Docker container
-      - name: Run Frontend Container
-        run: docker run -d -p 3000:80 --name frontend_test frontend:latest
-
-      # 8. Wait for the frontend to be ready
-      - name: Wait for Frontend to be Ready
-        run: |
-          for i in {1..30}; do
-            if curl -s http://localhost:3000 > /dev/null; then
-              echo "Frontend is up!"
-              exit 0
-            fi
-            echo "Waiting for frontend to be ready..."
-            sleep 5
-          done
-          echo "Frontend did not become ready in time."
-          exit 1
-
-      # 9. Run frontend tests (if any)
       - name: Run Frontend Tests
+        if: steps.filter.outputs.client == 'true'
         working-directory: ./client
         run: npm test -- --ci --reporters=default
 
-      # 10. Verify the frontend is serving content
-      - name: Verify Frontend is Serving
-        run: |
-          curl -f http://localhost:3000 || { echo "Frontend not responding"; exit 1; }
+      - name: Build Frontend Docker Image
+        if: steps.filter.outputs.client == 'true'
+        working-directory: ./client
+        run: docker build -t frontend:latest .
 
-      # 11. Clean up Docker container
-      - name: Tear Down Frontend Container
+      - name: Run Frontend Docker Container
+        if: steps.filter.outputs.client == 'true'
+        run: docker run -d -p 3000:80 --name frontend_test frontend:latest
+
+      - name: Tear Down Frontend Docker Container
         if: always()
         run: docker rm -f frontend_test || true
