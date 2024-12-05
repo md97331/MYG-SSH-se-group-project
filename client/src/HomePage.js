@@ -12,7 +12,7 @@ function Home() {
 
     // Fetch initial message from Flask backend
     useEffect(() => {
-        axios.get('http://localhost:5000/api/message')
+        axios.get('http://localhost:5001/api/message')
             .then((response) => {
                 setMessage(response.data.message);
             })

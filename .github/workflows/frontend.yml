@@ -1,0 +1,82 @@
+name: Frontend CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test-frontend:
+    name: Build and Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # 3. Cache Node.js dependencies to speed up builds
+      - name: Cache Node.js modules
+        uses: actions/cache@v3
+        with:
+          path: ./client/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/client/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 4. Install dependencies
+      - name: Install Dependencies
+        working-directory: ./client
+        run: npm install
+
+      # 5. Build React application
+      - name: Build React App
+        working-directory: ./client
+        run: npm run build
+
+      # 6. Build Docker image for frontend
+      - name: Build Frontend Docker Image
+        working-directory: ./client
+        run: docker build -t frontend:latest .
+
+      # 7. Run Docker container
+      - name: Run Frontend Container
+        run: docker run -d -p 3000:80 --name frontend_test frontend:latest
+
+      # 8. Wait for the frontend to be ready
+      - name: Wait for Frontend to be Ready
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:3000 > /dev/null; then
+              echo "Frontend is up!"
+              exit 0
+            fi
+            echo "Waiting for frontend to be ready..."
+            sleep 5
+          done
+          echo "Frontend did not become ready in time."
+          exit 1
+
+      # 9. Run frontend tests (if any)
+      - name: Run Frontend Tests
+        working-directory: ./client
+        run: npm test -- --ci --reporters=default
+
+      # 10. Verify the frontend is serving content
+      - name: Verify Frontend is Serving
+        run: |
+          curl -f http://localhost:3000 || { echo "Frontend not responding"; exit 1; }
+
+      # 11. Clean up Docker container
+      - name: Tear Down Frontend Container
+        if: always()
+        run: docker rm -f frontend_test || true
