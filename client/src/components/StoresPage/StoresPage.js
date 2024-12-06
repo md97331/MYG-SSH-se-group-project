@@ -1,56 +1,131 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const StoresPage = ({ addToCart, goToHome, goToCart }) => {
-    const categories = {
-        Fruits: [
-            { id: 1, name: 'Apple', price: 1.5, image: 'https://via.placeholder.com/100' },
-            { id: 2, name: 'Banana', price: 1.0, image: 'https://via.placeholder.com/100' },
-            { id: 3, name: 'Orange', price: 2.0, image: 'https://via.placeholder.com/100' },
-            { id: 4, name: 'Grapes', price: 3.0, image: 'https://via.placeholder.com/100' },
-            { id: 5, name: 'Strawberry', price: 4.0, image: 'https://via.placeholder.com/100' },
-            { id: 6, name: 'Pineapple', price: 3.5, image: 'https://via.placeholder.com/100' },
-            { id: 7, name: 'Mango', price: 2.5, image: 'https://via.placeholder.com/100' },
+const StoresPage = ({ storeId, addToCart, goToHome, goToCart }) => {
+    const [categories, setCategories] = useState({});
+    const [error, setError] = useState(null);
+
+    // Predefined fake products to supplement API products
+    const predefinedProducts = {
+        Pantry: [
+            {
+                id: 101,
+                name: 'Can of Soup',
+                price: 3.0,
+                description: 'A hearty can of soup for a quick and easy meal.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 103,
+                name: 'Flour',
+                price: 3.5,
+                description: 'All-purpose flour for baking and cooking.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 104,
+                name: 'Spices',
+                price: 2.5,
+                description: 'A mix of essential spices to enhance your dishes.',
+                image: 'https://via.placeholder.com/100',
+            },
         ],
-        Vegetables: [
-            { id: 8, name: 'Carrot', price: 1.2, image: 'https://via.placeholder.com/100' },
-            { id: 9, name: 'Broccoli', price: 2.5, image: 'https://via.placeholder.com/100' },
-            { id: 10, name: 'Potato', price: 0.8, image: 'https://via.placeholder.com/100' },
-            { id: 11, name: 'Spinach', price: 1.5, image: 'https://via.placeholder.com/100' },
-            { id: 12, name: 'Tomato', price: 2.0, image: 'https://via.placeholder.com/100' },
-            { id: 13, name: 'Onion', price: 1.0, image: 'https://via.placeholder.com/100' },
-            { id: 14, name: 'Peppers', price: 2.5, image: 'https://via.placeholder.com/100' },
+        Beverages: [
+            {
+                id: 106,
+                name: 'Apple Juice',
+                price: 2.5,
+                description: 'Refreshing apple juice made from 100% real apples.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 107,
+                name: 'Beer',
+                price: 0.8,
+                description: 'A crisp, cold beer to relax and unwind.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 108,
+                name: 'Sparkling Water',
+                price: 1.5,
+                description: 'Bubbly sparkling water with a refreshing taste.',
+                image: 'https://via.placeholder.com/100',
+            },
         ],
         Dairy: [
-            { id: 15, name: 'Milk', price: 3.0, image: 'https://via.placeholder.com/100' },
-            { id: 16, name: 'Cheese', price: 4.0, image: 'https://via.placeholder.com/100' },
-            { id: 17, name: 'Butter', price: 2.5, image: 'https://via.placeholder.com/100' },
-            { id: 18, name: 'Yogurt', price: 1.0, image: 'https://via.placeholder.com/100' },
-            { id: 19, name: 'Cream', price: 2.0, image: 'https://via.placeholder.com/100' },
-            { id: 20, name: 'Ice Cream', price: 5.0, image: 'https://via.placeholder.com/100' },
-        ],
-        Meats: [
-            { id: 21, name: 'Chicken Breast', price: 5.0, image: 'https://via.placeholder.com/100' },
-            { id: 22, name: 'Ground Beef', price: 6.0, image: 'https://via.placeholder.com/100' },
-            { id: 23, name: 'Pork Chops', price: 4.5, image: 'https://via.placeholder.com/100' },
-            { id: 24, name: 'Salmon', price: 8.0, image: 'https://via.placeholder.com/100' },
-            { id: 25, name: 'Turkey Slices', price: 3.5, image: 'https://via.placeholder.com/100' },
-            { id: 26, name: 'Lamb Chops', price: 10.0, image: 'https://via.placeholder.com/100' },
-            { id: 27, name: 'Bacon', price: 4.0, image: 'https://via.placeholder.com/100' },
-        ],
-        Snacks: [
-            { id: 28, name: 'Chips', price: 2.0, image: 'https://via.placeholder.com/100' },
-            { id: 29, name: 'Chocolate Bar', price: 1.5, image: 'https://via.placeholder.com/100' },
-            { id: 30, name: 'Popcorn', price: 3.0, image: 'https://via.placeholder.com/100' },
-            { id: 31, name: 'Cookies', price: 4.0, image: 'https://via.placeholder.com/100' },
-            { id: 32, name: 'Nuts', price: 5.0, image: 'https://via.placeholder.com/100' },
-            { id: 33, name: 'Pretzels', price: 2.5, image: 'https://via.placeholder.com/100' },
-            { id: 34, name: 'Granola Bars', price: 3.5, image: 'https://via.placeholder.com/100' },
+            {
+                id: 109,
+                name: 'Milk',
+                price: 5.0,
+                description: 'Fresh whole milk, perfect for drinking or cooking.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 110,
+                name: 'Yogurt',
+                price: 2.0,
+                description: 'Creamy yogurt, available in various flavors.',
+                image: 'https://via.placeholder.com/100',
+            },
+            {
+                id: 111,
+                name: 'Cream',
+                price: 3.0,
+                description: 'Rich and smooth cream for cooking or desserts.',
+                image: 'https://via.placeholder.com/100',
+            },
         ],
     };
+    
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get(`http://localhost:5001/api/supermarkets/${storeId}/products`);
+                const products = response.data.products;
+    
+                // Group products by category
+                const groupedCategories = products.reduce((acc, product) => {
+                    const category = product.category || 'Uncategorized';
+                    if (!acc[category]) {
+                        acc[category] = [];
+                    }
+                    acc[category].push({
+                        id: product.product_id,
+                        name: product.product_name,
+                        price: parseFloat(product.price) || 0,
+                        description: product.description || '',
+                        image: 'https://via.placeholder.com/100',
+                    });
+                    return acc;
+                }, {});
+    
+                setCategories(groupedCategories);
+            } catch (err) {
+                console.error('Failed to fetch products:', err);
+                setError('Failed to load products. Please try again later.');
+            }
+        };
+    
+        if (storeId) {
+            fetchProducts();
+        }
+    }, [storeId]);
+    
+
+    if (error) {
+        return (
+            <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
+                <h1>Store Products</h1>
+                <p style={{ color: 'red' }}>{error}</p>
+            </div>
+        );
+    }
 
     return (
         <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
-            {/* Home Button with Home Icon */}
+            {/* Home Button */}
             <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
                 <button
                     onClick={goToHome}
@@ -110,6 +185,7 @@ const StoresPage = ({ addToCart, goToHome, goToCart }) => {
                                     style={{ width: '100px', height: '100px', borderRadius: '5px' }}
                                 />
                                 <h4 style={{ margin: '10px 0' }}>{product.name}</h4>
+                                <p style={{ color: '#555' }}>{product.description}</p>
                                 <p style={{ color: '#555' }}>${product.price.toFixed(2)}</p>
                                 <button
                                     onClick={() => addToCart(product)}
