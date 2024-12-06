@@ -1,27 +1,14 @@
 import React, { useState } from 'react';
-//import axios from 'axios';
 import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
 import Cart from '../Cart/cart'; // Import Cart
-//import Profile from './Profile'; // Import Profile
+import Profile from '../Profile/Profile'; // Import Profile
 
 function HomePage() {
     const [currentPage, setCurrentPage] = useState('home'); // Tracks the current page
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
-    //const [message, setMessage] = useState('');
     const [error, setError] = useState(''); // Error message state for ZIP code validation
     const [cart, setCart] = useState([]); // Cart state
-
-    // Fetch initial message from Flask backend
-    // useEffect(() => {
-    //     axios.get('http://localhost:5000/api/message')
-    //         .then((response) => {
-    //             setMessage(response.data.message);
-    //         })
-    //         .catch((error) => {
-    //             console.error('Error fetching message:', error);
-    //         });
-    // }, []);
 
     // Handle ZIP code submission
     const handleZipSubmit = () => {
@@ -61,9 +48,9 @@ function HomePage() {
         return <Cart cart={cart} goToHome={() => setCurrentPage('home')} />;
     }
 
-    // if (currentPage === 'profile') {
-    //     return <Profile goToHome={() => setCurrentPage('home')} />;
-    // }
+    if (currentPage === 'profile') {
+        return <Profile goToHome={() => setCurrentPage('home')} />;
+    }
 
     // Render the home page
     return (
