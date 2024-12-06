@@ -36,6 +36,5 @@ describe("Shopping Cart App", () => {
         // Switch back to Individual Tab
         expect(screen.getByText("Individual Cart")).toBeInTheDocument();
     });
-    
-});
 
+});
