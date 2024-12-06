@@ -26,7 +26,7 @@ services:
       MYSQL_DATABASE: supermarkets_db
     volumes:
       - db-data:/var/lib/mysql  # Persistent volume for MySQL data
-      - ./server/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
+      - ./server/db/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
     networks:
       - app-network
     healthcheck:
