@@ -1,14 +1,9 @@
-name: Backend CI
+name: Build and Test Backend
 
 on:
   push:
     branches:
-      - main
-      - CICDcreation
-  pull_request:
-    branches:
-      - main
-      - CICDcreation
+      - '**'
 
 jobs:
   build:
