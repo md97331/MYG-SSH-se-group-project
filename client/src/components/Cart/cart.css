@@ -175,3 +175,35 @@ h1,h2 {
 .item-quantity {
     font-size: 8px;
 }
+
+.checkout-button {
+    background-color: #257cd4;
+    color: white;
+    position: absolute;
+    right: 10px;
+    bottom: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.checkout-button:hover {
+    background-color: #1b5ca8;
+    transform: translateY(-2px);
+}
+
+.checkout-button:active {
+    background-color: #174a85;
+    transform: translateY(0);
+}
+
+.error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
+}
