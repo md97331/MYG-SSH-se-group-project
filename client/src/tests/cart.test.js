@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import '@testing-library/jest-dom'; 
 import Cart from "../components/Cart/cart"; 
-import App from "../components/HomePage/HomePage";
 
 describe("Shopping Cart App", () => {
     // Mock `window.alert`
