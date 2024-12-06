@@ -1,30 +1,36 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
 import Cart from '../Cart/cart'; // Import Cart
 import Profile from '../Profile/Profile'; // Import Profile
 
 function HomePage() {
-    const [currentPage, setCurrentPage] = useState('home'); // Tracks the current page
+    const [currentPage, setCurrentPage] = useState({ name: 'home', storeId: null }); // Tracks the current page
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
     const [error, setError] = useState(''); // Error message state for ZIP code validation
     const [cart, setCart] = useState([]); // Cart state
 
     // Handle ZIP code submission
-    const handleZipSubmit = () => {
+    const handleZipSubmit = async () => {
         if (zipCode.length > 7) {
             setError('ZIP code cannot exceed 7 characters.');
             return;
         }
         setError(''); // Clear any previous errors
 
-        // Mock store data (replace this with a real API call if needed)
-        const mockStores = [
-            { id: 1, name: 'Grocery Mart', address: '123 Market St', image: 'https://via.placeholder.com/100' },
-            { id: 2, name: 'Fresh Foods', address: '456 Main Ave', image: 'https://via.placeholder.com/100' },
-            { id: 3, name: 'Quick Groceries', address: '789 Center Blvd', image: 'https://via.placeholder.com/100' },
-        ];
-        setStores(mockStores);
+        try {
+            // Fetch supermarkets from the backend
+            const response = await axios.get('http://localhost:5001/api/supermarkets');
+            const supermarkets = response.data.supermarkets;
+
+            // Randomly select 3 supermarkets
+            const randomStores = supermarkets.sort(() => 0.5 - Math.random()).slice(0, 3);
+            setStores(randomStores);
+        } catch (err) {
+            console.error('Failed to fetch supermarkets:', err);
+            setError('Failed to load supermarkets. Please try again later.');
+        }
     };
 
     // Handle ZIP code input change with length restriction
@@ -40,16 +46,16 @@ function HomePage() {
     };
 
     // Render the appropriate page based on `currentPage`
-    if (currentPage === 'stores') {
-        return <StoresPage addToCart={addToCart} goToHome={() => setCurrentPage('home')} goToCart={() => setCurrentPage('cart')} />;
+    if (currentPage.name === 'stores') {
+        return <StoresPage storeId={currentPage.storeId} addToCart={addToCart} goToHome={() => setCurrentPage({ name: 'home', storeId: null })} goToCart={() => setCurrentPage({ name: 'cart', storeId: null })} />;
     }
 
-    if (currentPage === 'cart') {
-        return <Cart cart={cart} goToHome={() => setCurrentPage('home')} />;
+    if (currentPage.name === 'cart') {
+        return <Cart cart={cart} goToHome={() => setCurrentPage({ name: 'home', storeId: null })} />;
     }
 
-    if (currentPage === 'profile') {
-        return <Profile goToHome={() => setCurrentPage('home')} />;
+    if (currentPage.name === 'profile') {
+        return <Profile goToHome={() => setCurrentPage({ name: 'home', storeId: null })} />;
     }
 
     // Render the home page
@@ -58,7 +64,7 @@ function HomePage() {
             {/* Profile Icon */}
             <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
                 <button
-                    onClick={() => setCurrentPage('profile')}
+                    onClick={() => setCurrentPage({ name: 'profile', storeId: null })}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',
@@ -73,7 +79,7 @@ function HomePage() {
             {/* Shopping Cart Icon */}
             <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
                 <button
-                    onClick={() => setCurrentPage('cart')}
+                    onClick={() => setCurrentPage({ name: 'cart', storeId: null })}
                     style={{
                         backgroundColor: 'transparent',
                         border: 'none',
@@ -124,30 +130,13 @@ function HomePage() {
                 {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
             </div>
 
-            {/* Navigate to Stores Page */}
-            <button
-                onClick={() => setCurrentPage('stores')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                }}
-            >
-                Visit Store
-            </button>
-
             {/* Display Stores */}
             <div style={{ marginTop: '40px' }}>
                 <h2>Available Stores</h2>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
                     {stores.map((store) => (
                         <div
-                            key={store.id}
+                            key={store.supermarket_id}
                             style={{
                                 width: '200px',
                                 padding: '20px',
@@ -157,13 +146,25 @@ function HomePage() {
                                 boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                             }}
                         >
-                            <img
-                                src={store.image}
-                                alt={store.name}
-                                style={{ width: '100px', height: '100px', borderRadius: '10px' }}
-                            />
                             <h3 style={{ margin: '10px 0' }}>{store.name}</h3>
-                            <p style={{ color: '#555' }}>{store.address}</p>
+                            <p style={{ color: '#555' }}>{store.location}</p>
+                            <button
+                                onClick={() => setCurrentPage({ name: 'stores', storeId: store.supermarket_id })}
+                                style={{
+                                    padding: '10px 20px',
+                                    backgroundColor: '#28a745',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    border: 'none',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                    marginTop: '10px',
+                                }}
+                                aria-label="Visit Store"
+                            >
+                                Visit Store
+                            </button>
+
                         </div>
                     ))}
                 </div>

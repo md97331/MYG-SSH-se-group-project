@@ -3,6 +3,16 @@ from ..db_utils import execute_query
 
 products_bp = Blueprint('products', __name__)
 
+
+@products_bp.route('/api/supermarkets', methods=['GET'])
+def get_supermarkets():
+    try:
+        query = "SELECT * FROM supermarkets"
+        supermarkets = execute_query(query)
+        return jsonify({"supermarkets": supermarkets}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @products_bp.route('/api/products', methods=['GET'])
 def get_all_products():
     try:
