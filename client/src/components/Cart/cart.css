@@ -201,3 +201,9 @@ h1,h2 {
     background-color: #174a85;
     transform: translateY(0);
 }
+
+.error-message {
+    color: red;
+    font-size: 13px;
+    margin-top: 5px;
+}
