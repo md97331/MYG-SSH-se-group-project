@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './cart.css';
 import { FaTrashAlt } from 'react-icons/fa';
-import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai'; // Plus and Minus icons
+import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
+import Checkout from '../Checkout/checkout'
+
 
 // Cart component
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
+    
     return (
         <div>
             <h2>{title}</h2>
@@ -47,7 +50,10 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                 )}
             </ul>
             {isIndividualTab && cartItems.length > 0 && (
-                <button className="checkout-button" onClick={onCheckout}>
+                <button
+                    className="checkout-button"
+                    onClick={() => onCheckout()}
+                >
                     Checkout
                 </button>
             )}
@@ -56,6 +62,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
 };
 
 const App = () => {
+    const [currentPage, setCurrentPage] = useState('cart');
     const [individualCart, setIndividualCart] = useState([
         {
             name: "Apple",
@@ -85,7 +92,7 @@ const App = () => {
         },
     ]);
     const [activeTab, setActiveTab] = useState('individual'); // Tracks which tab is active
-
+    
     // Load individual cart from localStorage if it exists
     useEffect(() => {
         const savedCart = localStorage.getItem('individualCart');
@@ -113,6 +120,10 @@ const App = () => {
     //     setActiveTab(tab);
     // };
 
+    if (currentPage === 'checkout') {
+        return <Checkout />;
+    }
+
     //back button go to homepage
     const goToHomepage = () => {
         window.location.href = '/';
@@ -124,7 +135,7 @@ const App = () => {
         setIndividualCart(newCart);
     };
     const handleCheckout = () => {
-        alert('Proceeding to checkout!');
+        setCurrentPage('checkout');
     };
     // Increase item quantity
     const increaseQuantity = (index) => {
@@ -143,6 +154,7 @@ const App = () => {
     };
 
     return (
+        
         <div>
             {/* Top bar */}
             <div className="top-bar">
