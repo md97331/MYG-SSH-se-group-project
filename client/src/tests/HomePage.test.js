@@ -1,5 +1,34 @@
+// import React from 'react';
+// import { render, screen, fireEvent } from '@testing-library/react';
+// import '@testing-library/jest-dom';
+// import HomePage from '../components/HomePage/HomePage';
+
+// test('renders HomePage correctly', () => {
+//     render(<HomePage />);
+//     const headingElement = screen.getByText(/Welcome to Group Delivery!/i);
+//     expect(headingElement).toBeInTheDocument();
+// });
+
+// test('renders location input and submit button', () => {
+//     render(<HomePage />);
+//     const locationInput = screen.getByPlaceholderText(/Enter ZIP Code/i);
+//     const submitButton = screen.getByRole('button', { name: /submit/i });
+//     expect(locationInput).toBeInTheDocument();
+//     expect(submitButton).toBeInTheDocument();
+// });
+
+// test('renders and navigates to stores page', async () => {
+//     render(<HomePage />);
+//     const storeButton = await screen.findByRole('button', { name: /visit store/i });
+//     fireEvent.click(storeButton);
+
+//     // Wait for the "Store Products" heading to appear
+//     const storeHeading = await screen.findByText(/Store Products/i);
+//     expect(storeHeading).toBeInTheDocument();
+// });
+
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import axios from 'axios'; // Import axios
 import HomePage from '../components/HomePage/HomePage';
@@ -7,22 +36,18 @@ import HomePage from '../components/HomePage/HomePage';
 // Mock axios
 jest.mock('axios');
 
-test('renders HomePage correctly', async () => {
-  await act(async () => {
-      render(<HomePage />);
-  });
+test('renders HomePage correctly', () => {
+  render(<HomePage />);
   const headingElement = screen.getByText(/Welcome to Group Delivery!/i);
   expect(headingElement).toBeInTheDocument();
 });
 
-test('renders location input and submit button', async () => {
-    await act(async () => {
-        render(<HomePage />);
-    });
-    const locationInput = screen.getByPlaceholderText(/Enter ZIP Code/i);
-    const submitButton = screen.getByRole('button', { name: /submit/i });
-    expect(locationInput).toBeInTheDocument();
-    expect(submitButton).toBeInTheDocument();
+test('renders location input and submit button', () => {
+  render(<HomePage />);
+  const locationInput = screen.getByPlaceholderText(/Enter ZIP Code/i);
+  const submitButton = screen.getByRole('button', { name: /submit/i });
+  expect(locationInput).toBeInTheDocument();
+  expect(submitButton).toBeInTheDocument();
 });
 
 test('renders and navigates to stores page', async () => {

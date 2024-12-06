@@ -6,7 +6,7 @@ const StoresPage = ({ storeId, addToCart, goToHome, goToCart }) => {
     const [error, setError] = useState(null);
 
     // Predefined fake products to supplement API products
-    const predefinedProducts = {
+    const predefinedProducts  = {
         Pantry: [
             {
                 id: 101,
@@ -101,6 +101,17 @@ const StoresPage = ({ storeId, addToCart, goToHome, goToCart }) => {
                     return acc;
                 }, {});
     
+                // Merge with predefinedProducts
+                Object.keys(predefinedProducts).forEach((category) => {
+                    if (!groupedCategories[category]) {
+                        groupedCategories[category] = [];
+                    }
+                    groupedCategories[category] = [
+                        ...groupedCategories[category],
+                        ...predefinedProducts[category],
+                    ];
+                });
+    
                 setCategories(groupedCategories);
             } catch (err) {
                 console.error('Failed to fetch products:', err);
@@ -112,6 +123,7 @@ const StoresPage = ({ storeId, addToCart, goToHome, goToCart }) => {
             fetchProducts();
         }
     }, [storeId]);
+    
     
 
     if (error) {
