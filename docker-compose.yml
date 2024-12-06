@@ -1,24 +1,19 @@
 version: '3.8'
 
 services:
-
   flask:
     build:
       context: ./server
     ports:
       - "5001:5001"
     environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: 73961200
-      DB_NAME: supermarkets_db
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=73961200
+      - DB_NAME=supermarkets_db
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - ./server/src:/app/src
-      - ./server/config:/app/config
-      - ./server/db:/app/db
     networks:
       - app-network
 
@@ -30,8 +25,8 @@ services:
       MYSQL_ROOT_PASSWORD: 73961200
       MYSQL_DATABASE: supermarkets_db
     volumes:
-      - db-data:/var/lib/mysql
-      - ./server/db/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql
+      - db-data:/var/lib/mysql  # Persistent volume for MySQL data
+      - ./server/supermarkets_db.sql:/docker-entrypoint-initdb.d/supermarkets_db.sql  # Correct SQL script mapping
     networks:
       - app-network
     healthcheck:
