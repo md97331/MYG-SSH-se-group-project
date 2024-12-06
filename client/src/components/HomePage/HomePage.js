@@ -13,23 +13,25 @@ function HomePage() {
 
     // Handle ZIP code submission
     const handleZipSubmit = async () => {
+        if (zipCode.length > 7) {
+            setError('ZIP code cannot exceed 7 characters.');
+            return;
+        }
+        setError(''); // Clear any previous errors
+
         try {
+            // Fetch supermarkets from the backend
             const response = await axios.get('http://localhost:5001/api/supermarkets');
             const supermarkets = response.data.supermarkets;
-    
-            if (supermarkets.length > 0) {
-                // Randomly pick 3 supermarkets
-                const randomStores = supermarkets.sort(() => 0.5 - Math.random()).slice(0, 3);
-                setStores(randomStores);
-            } else {
-                setError('No supermarkets found for this location.');
-            }
+
+            // Randomly select 3 supermarkets
+            const randomStores = supermarkets.sort(() => 0.5 - Math.random()).slice(0, 3);
+            setStores(randomStores);
         } catch (err) {
             console.error('Failed to fetch supermarkets:', err);
             setError('Failed to load supermarkets. Please try again later.');
         }
     };
-    
 
     // Handle ZIP code input change with length restriction
     const handleZipChange = (e) => {
@@ -158,9 +160,11 @@ function HomePage() {
                                     cursor: 'pointer',
                                     marginTop: '10px',
                                 }}
+                                aria-label="Visit Store"
                             >
                                 Visit Store
                             </button>
+
                         </div>
                     ))}
                 </div>
