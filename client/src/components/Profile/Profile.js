@@ -1,66 +1,81 @@
-import React, { useState } from 'react';
-import ReturnUser from './ReturnUser'; // Import the ReturnUser component
-import NewUser from './NewUser'; // Import the NewUser component
 
-function Profile({ goToHome }) {
-    const [currentPage, setCurrentPage] = useState(''); // Tracks whether user selects returning or new user
 
-    if (currentPage === 'returning') {
-        return <ReturnUser goToHome={goToHome} />;
-    }
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-    if (currentPage === 'new') {
-        return <NewUser goToHome={goToHome} />;
-    }
+import NewUser from "../Profile/NewUser"; // Adjust the path based on your file structure
+import ReturnUser from "../Profile/ReturnUser"; // Adjust the path based on your file structure
 
+const ProfilePage = () => {
+  const [userList, setUserList] = useState([]); // State to store the list of users
+  const [error, setError] = useState(""); // State to handle errors
+  const [loading, setLoading] = useState(false); // Initialize loading as false
+  const [currentPage, setCurrentPage] = useState("profile"); // State to manage the current page
+
+  useEffect(() => {
+    // Fetch the list of users from the database
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get("http://localhost:5001/api/users"); // Get all users
+        setUserList(response.data); // Store the list of users
+        setError(""); // Clear any errors
+      } catch (err) {
+        console.error(err);
+        if (err.response && err.response.status === 500) {
+          setError("Internal Server Error: Unable to fetch users.");
+        } else {
+          setError("Failed to fetch user list. Please try again later.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  // Handle loading state
+  if (loading) return <div>Loading...</div>;
+
+  // Handle error state
+  if (error) {
     return (
-        <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
-            {/* Home Button */}
-            <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-                <button
-                    onClick={goToHome}
-                    style={{
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '30px',
-                    }}
-                >
-                    🏠
-                </button>
-            </div>
-            <h1>Profile Page</h1>
-            <button
-                onClick={() => setCurrentPage('returning')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#007BFF',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginRight: '10px',
-                }}
-            >
-                Returning User
-            </button>
-            <button
-                onClick={() => setCurrentPage('new')}
-                style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#28a745',
-                    color: '#fff',
-                    fontSize: '16px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                }}
-            >
-                New User
-            </button>
-        </div>
+      <div>
+        <h1>Error</h1>
+        <p>{error}</p>
+      </div>
     );
-}
+  }
 
-export default Profile;
+  // Render page based on the current state
+  if (currentPage === "newUser") {
+    return <NewUser onBack={() => setCurrentPage("profile")} />;
+  }
+
+  if (currentPage === "returnUser") {
+    return <ReturnUser onBack={() => setCurrentPage("profile")} />;
+  }
+
+  return (
+    <div>
+      <h1>Welcome to the Profile Page</h1>
+      {userList.length === 0 ? (
+        // If there are no users in the database
+        <div>
+          <p>No users exist yet. Please create a new user to proceed.</p>
+          <button onClick={() => setCurrentPage("newUser")}>New User</button>
+        </div>
+      ) : (
+        // If there are users in the database
+        <div>
+          <p>Welcome! Please choose an option below:</p>
+          <button onClick={() => setCurrentPage("newUser")}>New User</button>
+          <button onClick={() => setCurrentPage("returnUser")}>Return User</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ProfilePage;
