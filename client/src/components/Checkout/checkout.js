@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './checkout.css';
+import Cart from '../Cart/cart';
 
 const Checkout = ({ onBackToCart }) => {
     const [cardNumber, setCardNumber] = useState('');
@@ -21,6 +22,16 @@ const Checkout = ({ onBackToCart }) => {
         // Update the card number value with only digits
         setCardNumber(value.replace(/[^0-9]/g, ''));
     };
+    const [currentPage, setCurrentPage] = useState('checkout');
+
+    if (currentPage === 'cart') {
+        return <Cart />;
+    }
+
+    const handleBackToCart = () => {
+        setCurrentPage('cart');
+    };
+    
 
     const handlecvv = (event) => {
         const value = event.target.value;
@@ -34,6 +45,7 @@ const Checkout = ({ onBackToCart }) => {
 
         // Update the cvv with only the first 3 digits
         setcvv(value.replace(/[^0-9]/g, '').slice(0, 3));
+
     };
 
     return (
@@ -71,12 +83,8 @@ const Checkout = ({ onBackToCart }) => {
                     <input type="text" id="nameOnCard" placeholder="Enter the name on card" required />
 
                     <div className="button-container">
-                        <button className="back-to-cart-button" onClick={onBackToCart}>
-                            Back to Cart
-                        </button>
-                        <button type="submit" className="checkout-button">
-                            Place Order
-                        </button>
+                        <button className="back-to-cart-button" onClick={handleBackToCart}>Back to Cart</button>
+                        <button type="submit" className="checkout-button">Place Order</button>
                     </div>
                 </div>
 
