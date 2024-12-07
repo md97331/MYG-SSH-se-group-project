@@ -6,11 +6,11 @@ function Profile({ goToHome }) {
     const [currentPage, setCurrentPage] = useState(''); // Tracks whether user selects returning or new user
 
     if (currentPage === 'returning') {
-        return <ReturnUser goToHome={goToHome} />;
+        return <ReturnUser goToHome={() => setCurrentPage('')} />;
     }
 
     if (currentPage === 'new') {
-        return <NewUser goToHome={goToHome} />;
+        return <NewUser goToHome={() => setCurrentPage('')} />;
     }
 
     return (
