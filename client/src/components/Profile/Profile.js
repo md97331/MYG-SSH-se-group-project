@@ -6,49 +6,61 @@ function Profile({ goToHome }) {
     const [currentPage, setCurrentPage] = useState(''); // Tracks whether user selects returning or new user
 
     if (currentPage === 'returning') {
-        return <ReturnUser goToHome={goToHome} />;
+        return <ReturnUser goToHome={() => setCurrentPage('')} />;
     }
 
     if (currentPage === 'new') {
-        return <NewUser goToHome={goToHome} />;
+        return <NewUser goToHome={() => setCurrentPage('')} />;
     }
 
     return (
-      <div>
-        <h1>Error</h1>
-        <p>{error}</p>
-      </div>
+        <div style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Arial, sans-serif' }}>
+            {/* Home Button */}
+            <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
+                <button
+                    onClick={goToHome}
+                    style={{
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '30px',
+                    }}
+                >
+                    🏠
+                </button>
+            </div>
+            <h1>Profile Page</h1>
+            <button
+                onClick={() => setCurrentPage('returning')}
+                style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#007BFF',
+                    color: '#fff',
+                    fontSize: '16px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginRight: '10px',
+                }}
+            >
+                Returning User
+            </button>
+            <button
+                onClick={() => setCurrentPage('new')}
+                style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#28a745',
+                    color: '#fff',
+                    fontSize: '16px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                }}
+            >
+                New User
+            </button>
+        </div>
     );
-  }
+}
 
-  // Render page based on the current state
-  if (currentPage === "newUser") {
-    return <NewUser onBack={() => setCurrentPage("profile")} />;
-  }
-
-  if (currentPage === "returnUser") {
-    return <ReturnUser onBack={() => setCurrentPage("profile")} />;
-  }
-
-  return (
-    <div>
-      <h1>Welcome to the Profile Page</h1>
-      {userList.length === 0 ? (
-        // If there are no users in the database
-        <div>
-          <p>No users exist yet. Please create a new user to proceed.</p>
-          <button onClick={() => setCurrentPage("newUser")}>New User</button>
-        </div>
-      ) : (
-        // If there are users in the database
-        <div>
-          <p>Welcome! Please choose an option below:</p>
-          <button onClick={() => setCurrentPage("newUser")}>New User</button>
-          <button onClick={() => setCurrentPage("returnUser")}>Return User</button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default ProfilePage;
+export default Profile;
