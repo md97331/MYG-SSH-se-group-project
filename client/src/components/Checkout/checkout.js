@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import Cart from "../Cart/cart";
 import './checkout.css';
 import Cart from '../Cart/cart';
 
-const Checkout = ({ onBackToCart }) => {
+const Checkout = () => {
     const [cardNumber, setCardNumber] = useState('');
     const [cvv, setcvv] = useState('');
     const [isInvalid, setIsInvalid] = useState(false);
     const [iscvvInvalid, setIscvvInvalid] = useState(false);
+    const [currentPage, setCurrentPage] = useState('checkout');
 
     // Handle card number input, ensuring only numbers are entered
     const handleCardNumberChange = (event) => {
@@ -22,16 +24,11 @@ const Checkout = ({ onBackToCart }) => {
         // Update the card number value with only digits
         setCardNumber(value.replace(/[^0-9]/g, ''));
     };
-    const [currentPage, setCurrentPage] = useState('checkout');
 
-    if (currentPage === 'cart') {
-        return <Cart />;
+    if (currentPage.name === 'cart') {
+        return <Cart goToHome={() => setCurrentPage({ name: 'cart', storeId: null })} />;
     }
 
-    const handleBackToCart = () => {
-        setCurrentPage('cart');
-    };
-    
 
     const handlecvv = (event) => {
         const value = event.target.value;
@@ -50,6 +47,9 @@ const Checkout = ({ onBackToCart }) => {
 
     return (
         <div className="checkout-container">
+            <button className="back-to-cart-button" type="button" onClick={() => setCurrentPage({ name: 'cart' })}>
+                Back to Cart
+            </button>
             <h1>Checkout</h1>
             <form className="checkout-form">
                 <div className="form-group">
@@ -67,30 +67,25 @@ const Checkout = ({ onBackToCart }) => {
                 <div className="form-group">
                     <label htmlFor="payment">Payment Information</label>
 
-                    <label2 htmlFor="cardNumber"> Card Number</label2>
+                    <label htmlFor="cardNumber"> Card Number</label>
                     <input type="text" id="cardnumber" value={cardNumber} onChange={handleCardNumberChange} required placeholder="Enter card number"
                     />
                     {isInvalid && <span className="error-message">Only numbers are allowed.</span>}
 
-                    <label2 htmlFor="expirationDate">Expiration Date</label2>
+                    <label htmlFor="expirationDate">Expiration Date</label>
                     <input type="month" id="expirationDate" required />
 
-                    <label2 htmlFor="CVV">CVV</label2>
+                    <label htmlFor="CVV">CVV</label>
                     <input type="text" id="cvv" value={cvv} onChange={handlecvv} required placeholder="Enter the CVV" />
                     {iscvvInvalid && <span className="error-message">CVV consists of 3 digits</span>}
 
-                    <label2 htmlFor="nameOnCard">Name on Card</label2>
+                    <label htmlFor="nameOnCard">Name on Card</label>
                     <input type="text" id="nameOnCard" placeholder="Enter the name on card" required />
-
-                    <div className="button-container">
-                        <button className="back-to-cart-button" onClick={handleBackToCart}>Back to Cart</button>
-                        <button type="submit" className="checkout-button">Place Order</button>
-                    </div>
                 </div>
-
+                    <button className="placeOrder-button" type="submit">
+                        Place Order
+                    </button>
             </form>
-
-
         </div>
     );
 };

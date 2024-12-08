@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import './cart.css';
+import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
-import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai';
-import Checkout from '../Checkout/checkout'
+import Checkout from '../Checkout/checkout';
+import './cart.css';
 
 
-// Cart component
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
-    
     return (
-        <div>
+        <div className="cart-container">
             <h2>{title}</h2>
+            {isIndividualTab && cartItems.length > 0 && (
+                    <button className="checkout-button"  onClick={() => onCheckout()}>
+                        Checkout
+                    </button>
+            )}
             <ul className="cart-list">
                 {cartItems.length === 0 ? (
                     <li className="empty-cart">No items in the cart</li>
@@ -20,12 +23,11 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                             <img src={item.image} alt={item.name} className="item-image" />
                             <div className="item-details">
                                 <div className="item-name">{item.name}</div>
-                                {/* Quantity Controls */}
                                 <div className="quantity-controls">
                                     <button
                                         className="quantity-button"
                                         onClick={() => onDecreaseQuantity(index)}
-                                        disabled={item.quantity <= 1} // Disable if quantity is 1
+                                        disabled={item.quantity <= 1}
                                     >
                                         <AiOutlineMinus />
                                     </button>
@@ -38,113 +40,77 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                     </button>
                                 </div>
                             </div>
-                            {/* Check if price is valid before calling toFixed */}
                             <div className="item-price">
-                                ${item.price ? item.price.toFixed(2) : '1.00'}
+                                ${item.price.toFixed(2)}
                             </div>
                             <button className="remove-button" onClick={() => onRemoveItem(index)}>
-                                <FaTrashAlt /> {/* Trash can icon */}
+                                <FaTrashAlt />
                             </button>
                         </li>
                     ))
                 )}
             </ul>
-            {isIndividualTab && cartItems.length > 0 && (
-                <button
-                    className="checkout-button"
-                    onClick={() => onCheckout()}
-                >
-                    Checkout
-                </button>
-            )}
         </div>
     );
 };
 
+
+
 const App = () => {
     const [currentPage, setCurrentPage] = useState('cart');
-    const [individualCart, setIndividualCart] = useState([
-        {
-            name: "Apple",
-            image: "https://via.placeholder.com/50",
-            quantity: 3,
-            price: 1.5,
-        },
-        {
-            name: "Banana",
-            image: "https://via.placeholder.com/50",
-            quantity: 2,
-            price: 0.75,
-        },
-    ]);
-    const [sharedCart, setSharedCart] = useState([
-        {
-            name: "Pepper",
-            image: "https://via.placeholder.com/50",
-            quantity: 3,
-            price: 1,
-        },
-        {
-            name: "Tomato",
-            image: "https://via.placeholder.com/50",
-            quantity: 2,
-            price: 0.65,
-        },
-    ]);
-    const [activeTab, setActiveTab] = useState('individual'); // Tracks which tab is active
-    
-    // Load individual cart from localStorage if it exists
+    const [individualCart, setIndividualCart] = useState([]);
+    const [sharedCart, setSharedCart] = useState([]);
+    const [activeTab, setActiveTab] = useState('individual');
+    const userId = 1;
+    const groupId = 1;
+
+    // Fetch cart items from the backend
     useEffect(() => {
-        const savedCart = localStorage.getItem('individualCart');
-        if (savedCart) {
-            setIndividualCart(JSON.parse(savedCart));
-        }
+        fetch(`http://localhost:5001/api/cart/${groupId}`)
+            .then((response) => {
+                console.log("Raw Response:", response);
+                return response.json();
+            })
+            .then((data) => {
+                if (data.cart) {
+                    // Filter individual cart items based on `added_by_user`
+                    const userItems = data.cart.filter((item) => item.added_by_user === userId);
+                    setIndividualCart(
+                        userItems.map((item) => ({
+                            id: item.id,
+                            name: item.product_name,
+                            image: item.image_url || "https://via.placeholder.com/50",
+                            quantity: item.quantity,
+                            price: item.price || 1.0, // Default price if missing
+                        }))
+                    );
+
+
+                    // Set shared cart with all items
+                    setSharedCart(
+                        data.cart.map((item) => ({
+                            id: item.id,
+                            name: item.product_name,
+                            image: item.image_url || "https://via.placeholder.com/50",
+                            quantity: item.quantity,
+                            price: item.price || 1.0,
+                        }))
+                    );
+                }
+            })
+            .catch((error) => console.error("Error fetching cart:", error));
     }, []);
 
-    useEffect(() => {
-        const savedCart = localStorage.getItem('sharedCart');
-        if (savedCart) {
-            setSharedCart(JSON.parse(savedCart));
-        }
-    }, []);
-
-    // Save individual cart to localStorage when it changes
-    useEffect(() => {
-        if (individualCart.length > 0) {
-            localStorage.setItem('individualCart', JSON.stringify(individualCart));
-        }
-    }, [individualCart]);
-
-    // Handle switching tabs
-    // const handleTabSwitch = (tab) => {
-    //     setActiveTab(tab);
-    // };
-
-    if (currentPage === 'checkout') {
-        return <Checkout />;
-    }
-
-    //back button go to homepage
-    const goToHomepage = () => {
-        window.location.href = '/';
-    };
-    // Remove item from individual cart
-    const removeItemFromIndividualCart = (index) => {
-        const newCart = [...individualCart];
-        newCart.splice(index, 1);
-        setIndividualCart(newCart);
-    };
     const handleCheckout = () => {
         setCurrentPage('checkout');
     };
-    // Increase item quantity
+
     const increaseQuantity = (index) => {
         const updatedCart = [...individualCart];
         updatedCart[index].quantity += 1;
         setIndividualCart(updatedCart);
     };
 
-    // Decrease item quantity
     const decreaseQuantity = (index) => {
         const updatedCart = [...individualCart];
         if (updatedCart[index].quantity > 1) {
@@ -153,16 +119,35 @@ const App = () => {
         }
     };
 
+    if (currentPage === 'checkout') {
+        return <Checkout />;
+    }
+
+    const removeItemFromIndividualCart = (index) => {
+        const itemId = individualCart[index].id;
+        fetch('http://localhost:5001/api/cart/remove', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_id: itemId }),
+        })
+            .then((response) => response.json())
+            .then(() => {
+                const newCart = [...individualCart];
+                newCart.splice(index, 1);
+                setIndividualCart(newCart);
+            })
+            .catch((error) => console.error("Error removing item:", error));
+    };
+
     return (
-        
         <div>
-            {/* Top bar */}
             <div className="top-bar">
-                <button className="back-arrow" onClick={() => goToHomepage()}>&larr;</button>
+                <button className="back-arrow" onClick={() => (window.location.href = '/')}>
+                    🏠
+                </button>
                 <h1 className="shopping-cart-title">Shopping Cart</h1>
             </div>
 
-            {/* Tab navigation bar */}
             <div className="tabs-bar">
                 <div
                     className={`tab ${activeTab === 'shared' ? 'active' : ''}`}
@@ -178,13 +163,12 @@ const App = () => {
                 </div>
             </div>
 
-            {/* Tab content */}
             <div className="tab-content">
                 {activeTab === 'shared' && (
                     <Cart
                         title="Shared Cart"
                         cartItems={sharedCart}
-                        onRemoveItem={() => alert('Cannot remove items from the shared cart in this demo')}
+                        onRemoveItem={() => alert("Cannot remove items from the shared cart")}
                         isIndividualTab={false}
                     />
                 )}
@@ -196,7 +180,7 @@ const App = () => {
                         onIncreaseQuantity={increaseQuantity}
                         onDecreaseQuantity={decreaseQuantity}
                         onCheckout={handleCheckout}
-                        isIndividualTab={activeTab === 'individual'}
+                        isIndividualTab={true}
                     />
                 )}
             </div>
