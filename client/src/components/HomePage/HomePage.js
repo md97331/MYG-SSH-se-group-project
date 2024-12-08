@@ -1,9 +1,10 @@
 // HomePage.js
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
+import React, { useState } from 'react';
 import Cart from '../Cart/cart'; // Import Cart
 import Profile from '../Profile/Profile'; // Import Profile
+import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
 import { AuthContext } from '../../AuthContext'; // Import AuthContext
 
 function HomePage() {
@@ -44,9 +45,48 @@ function HomePage() {
         }
     };
 
-    const addToCart = (product) => {
-        setCart((prevCart) => [...prevCart, product]);
-    };
+const addToCart = (product) => {
+            const payload = {
+                group_id: 1,
+                product_name: product.name,
+                added_by_user: 1,
+                action: "add",
+                quantity: 1
+            };
+        
+            // Make the API call
+            fetch('http://localhost:5001/api/cart/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Failed to update cart');
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data.message); // Log success message
+                    setCart((prevCart) => {
+                        const existingItem = prevCart.find((item) => item.name === product.name);
+                        if (existingItem) {
+                            return prevCart.map((item) =>
+                                item.name === product.name
+                                    ? { ...item, quantity: (item.quantity || 1) + 1 }
+                                    : item
+                            );
+                        } else {
+                            return [...prevCart, { ...product, quantity: 1 }];
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error adding to cart:', error);
+                });
+        };
 
     // Render the appropriate page based on `currentPage`
     if (currentPage.name === 'stores') {

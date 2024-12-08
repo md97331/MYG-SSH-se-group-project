@@ -180,8 +180,8 @@ h1,h2 {
     background-color: #257cd4;
     color: white;
     position: absolute;
+    top: 120px; /* Adjust this value based on the height of the tabs-bar */
     right: 10px;
-    bottom: 20px;
     padding: 12px 24px;
     font-size: 16px;
     font-weight: bold;
