@@ -1,3 +1,4 @@
+// NewUser.js
 import React, { useState } from 'react';
 
 const NewUser = ({ goToHome }) => {
@@ -14,9 +15,11 @@ const NewUser = ({ goToHome }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username,
-                    password_hash: password,
+                    password_hash: password, // Sending password under 'password_hash'
                 }),
             });
+
+            const data = await response.json();
 
             if (response.ok) {
                 setSuccess('User successfully created!');
@@ -24,10 +27,12 @@ const NewUser = ({ goToHome }) => {
                 setUsername('');
                 setPassword('');
             } else {
-                setError('Failed to create user. Please try again.');
+                setError(data.error || 'Failed to create user. Please try again.');
+                setSuccess('');
             }
         } catch (err) {
             setError('Failed to create user. Please try again.');
+            setSuccess('');
         }
     };
 
@@ -51,25 +56,48 @@ const NewUser = ({ goToHome }) => {
             {success && <p style={{ color: 'green' }}>{success}</p>}
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
-                <div>
+                <div style={{ marginBottom: '10px' }}>
                     <input
                         type="text"
                         placeholder="Enter a username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
+                        style={{
+                            padding: '10px',
+                            width: '250px',
+                            borderRadius: '5px',
+                            border: '1px solid #ccc',
+                        }}
                     />
                 </div>
-                <div>
+                <div style={{ marginBottom: '10px' }}>
                     <input
                         type="password"
                         placeholder="Enter a password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={{
+                            padding: '10px',
+                            width: '250px',
+                            borderRadius: '5px',
+                            border: '1px solid #ccc',
+                        }}
                     />
                 </div>
-                <button type="submit" style={{ marginTop: '10px' }}>
+                <button
+                    type="submit"
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        fontSize: '16px',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    }}
+                >
                     Sign Up
                 </button>
             </form>

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+// ReturnUser.js
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../../AuthContext'; // Adjust the path as necessary
 
 const ReturnUser = ({ goToHome }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const { login } = useContext(AuthContext); // Access the login function from context
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -14,18 +17,24 @@ const ReturnUser = ({ goToHome }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username,
-                    password_hash: password,
+                    password_hash: password, // Sending password under 'password_hash'
                 }),
             });
+
+            const data = await response.json();
 
             if (response.ok) {
                 setSuccess('User successfully logged in!');
                 setError('');
+                login(data.user); // Update the AuthContext with user data
+                goToHome(); // Navigate back to the home page
             } else {
-                setError('Invalid username or password. Please try again.');
+                setError(data.error || 'Invalid username or password. Please try again.');
+                setSuccess('');
             }
         } catch (err) {
             setError('Failed to log in. Please try again.');
+            setSuccess('');
         }
     };
 
@@ -49,25 +58,48 @@ const ReturnUser = ({ goToHome }) => {
             {success && <p style={{ color: 'green' }}>{success}</p>}
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleLogin}>
-                <div>
+                <div style={{ marginBottom: '10px' }}>
                     <input
                         type="text"
                         placeholder="Enter your username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         required
+                        style={{
+                            padding: '10px',
+                            width: '250px',
+                            borderRadius: '5px',
+                            border: '1px solid #ccc',
+                        }}
                     />
                 </div>
-                <div>
+                <div style={{ marginBottom: '10px' }}>
                     <input
                         type="password"
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={{
+                            padding: '10px',
+                            width: '250px',
+                            borderRadius: '5px',
+                            border: '1px solid #ccc',
+                        }}
                     />
                 </div>
-                <button type="submit" style={{ marginTop: '10px' }}>
+                <button
+                    type="submit"
+                    style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007BFF',
+                        color: '#fff',
+                        fontSize: '16px',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    }}
+                >
                     Sign In
                 </button>
             </form>
