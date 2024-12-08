@@ -109,6 +109,7 @@ const App = () => {
         const updatedCart = [...individualCart];
         updatedCart[index].quantity += 1;
         setIndividualCart(updatedCart);
+        setSharedCart(updatedCart);
     };
 
     const decreaseQuantity = (index) => {
@@ -116,6 +117,7 @@ const App = () => {
         if (updatedCart[index].quantity > 1) {
             updatedCart[index].quantity -= 1;
             setIndividualCart(updatedCart);
+            setSharedCart(updatedCart);
         }
     };
 
@@ -135,6 +137,7 @@ const App = () => {
                 const newCart = [...individualCart];
                 newCart.splice(index, 1);
                 setIndividualCart(newCart);
+                setSharedCart(newCart)
             })
             .catch((error) => console.error("Error removing item:", error));
     };
