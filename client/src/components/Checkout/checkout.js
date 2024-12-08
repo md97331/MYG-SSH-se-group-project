@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Cart from "../Cart/cart";
 import './checkout.css';
-import Cart from '../Cart/cart';
 
 const Checkout = () => {
     const [cardNumber, setCardNumber] = useState('');
