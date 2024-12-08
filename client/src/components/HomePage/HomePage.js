@@ -46,9 +46,9 @@ function HomePage() {
 
 const addToCart = (product) => {
             const payload = {
-                group_id: 1,
+                group_id: user.group_id,
                 product_name: product.name,
-                added_by_user: 1,
+                added_by_user: user.id,
                 action: "add",
                 quantity: 1
             };

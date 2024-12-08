@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
+import { AuthContext } from '../../AuthContext';
 import Checkout from '../Checkout/checkout';
 import './cart.css';
-
 
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
     return (
@@ -61,8 +61,9 @@ const App = () => {
     const [individualCart, setIndividualCart] = useState([]);
     const [sharedCart, setSharedCart] = useState([]);
     const [activeTab, setActiveTab] = useState('individual');
-    const userId = 1;
-    const groupId = 1;
+    const { user } = useContext(AuthContext);
+    const userId = user.id;
+    const groupId = user.groupId;
 
     // Fetch cart items from the backend
     useEffect(() => {
@@ -107,9 +108,9 @@ const App = () => {
 
     const increaseQuantity = (product) => {
         const payload = {
-            group_id: 1,
+            group_id: groupId,
             product_name: product.name,
-            added_by_user: 1,
+            added_by_user: userId,
             action: "add",
             quantity: 1
         };
@@ -150,9 +151,9 @@ const App = () => {
 
     const decreaseQuantity = (product) => {
         const payload = {
-            group_id: 1,
+            group_id: groupId,
             product_name: product.name,
-            added_by_user: 1,
+            added_by_user: userId,
             action: "subtract",
             quantity: 1
         };
