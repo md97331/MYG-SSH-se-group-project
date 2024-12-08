@@ -1,11 +1,12 @@
-// NewUser.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../../AuthContext'; // Adjust the path as needed
 
 const NewUser = ({ goToHome }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const { login } = useContext(AuthContext); // Access the login function from context
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,8 +25,31 @@ const NewUser = ({ goToHome }) => {
             if (response.ok) {
                 setSuccess('User successfully created!');
                 setError('');
-                setUsername('');
-                setPassword('');
+
+                // Wait for 2 seconds before continuing
+                await new Promise((resolve) => setTimeout(resolve, 500));
+                setSuccess('User successfully created!\nLogging in...');
+                await new Promise((resolve) => setTimeout(resolve, 1500));
+                
+                // Auto-login after successful registration
+                const loginResponse = await fetch('http://localhost:5001/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        password_hash: password, 
+                    }),
+                });
+
+                const loginData = await loginResponse.json();
+
+                if (loginResponse.ok && loginData.user) {
+                    login(loginData.user);  // Save user info in AuthContext
+                    goToHome();            // Navigate to home
+                } else {
+                    setError('Failed to log in after registration. Please log in manually.');
+                    setSuccess('');
+                }
             } else {
                 setError(data.error || 'Failed to create user. Please try again.');
                 setSuccess('');
