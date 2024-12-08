@@ -1,39 +1,77 @@
 // Profile.js
 import React, { useState, useContext } from "react";
-import ReturnUser from "./ReturnUser"; // Import the ReturnUser component
-import NewUser from "./NewUser"; // Import the NewUser component
-import { AuthContext } from "../../AuthContext"; // Import AuthContext
+import ReturnUser from "./ReturnUser";
+import NewUser from "./NewUser";
+import { AuthContext } from "../../AuthContext";
 
 function Profile({ goToHome }) {
-  const [currentPage, setCurrentPage] = useState(""); // Tracks whether user selects returning or new user
-  const { user, logout } = useContext(AuthContext); // Access user and logout from context
+  const [currentPage, setCurrentPage] = useState("");
+  const { user, logout, login } = useContext(AuthContext);
 
   // Group management states
   const [groupCode, setGroupCode] = useState(""); // Holds the generated group code
   const [joinGroupCode, setJoinGroupCode] = useState(""); // Holds the input group code
   const [joinGroupMessage, setJoinGroupMessage] = useState(""); // Message for joining a group
 
-  // Function to generate a random 5-digit group code
-  const handleCreateGroupCode = () => {
-    const code = Math.floor(10000 + Math.random() * 90000).toString(); // Generate a random 5-digit code
-    setGroupCode(code);
-    setJoinGroupMessage(""); // Clear any previous join group messages
-  };
+  // Function to handle creating a 6-character alphanumeric group code
+  const handleCreateGroupCode = async () => {
+    try {
+      const response = await fetch(`http://localhost:5001/api/groups/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ created_by_user: user.id }),
+      });
 
-  // Function to handle joining a group
-  const handleJoinGroup = () => {
-    if (joinGroupCode.length === 5 && !isNaN(joinGroupCode)) {
-      setJoinGroupMessage(`You joined group ${joinGroupCode}!`);
-    } else {
-      setJoinGroupMessage("Invalid group code. Please enter a 5-digit number.");
+      if (response.ok) {
+        const data = await response.json();
+        setGroupCode(data.group_code); // Use the generated group code from the backend
+        setJoinGroupMessage(""); // Clear previous messages
+      } else {
+        const errorData = await response.json();
+        console.error("Error creating group:", errorData.error);
+        setJoinGroupMessage("Failed to create group. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error while creating group:", error);
+      setJoinGroupMessage("An error occurred while creating the group. Please try again.");
     }
   };
 
-  // If user is logged in, display their details and logout option
+  // Function to handle joining a group using a 6-character alphanumeric code
+  const handleJoinGroup = async () => {
+    const isValidCode = /^[A-Z0-9]{6}$/.test(joinGroupCode); // Validate alphanumeric and length
+    if (isValidCode) {
+      try {
+        const response = await fetch(`http://localhost:5001/api/groups/join`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user.id,
+            group_code: joinGroupCode,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const updatedUser = { ...user, group_id: joinGroupCode };
+          login(updatedUser); // Update the user in AuthContext
+          setJoinGroupMessage(`You joined group ${joinGroupCode}!`);
+        } else {
+          const data = await response.json();
+          setJoinGroupMessage(data.error || "Failed to join group. Please try again.");
+        }
+      } catch (error) {
+        console.error(error);
+        setJoinGroupMessage("An error occurred while joining the group. Please try again.");
+      }
+    } else {
+      setJoinGroupMessage("Invalid group code. Please enter a 6-character alphanumeric code.");
+    }
+  };
+
   if (user) {
     return (
       <div style={{ textAlign: "center", marginTop: "20px", fontFamily: "Arial, sans-serif" }}>
-        {/* Home Button */}
         <div style={{ position: "absolute", top: "20px", left: "20px" }}>
           <button
             onClick={goToHome}
@@ -85,7 +123,7 @@ function Profile({ goToHome }) {
           </button>
           {groupCode && (
             <p style={{ color: "green", fontWeight: "bold", marginTop: "10px" }}>
-              Share this code with friends or copy paste this code below to join the group!
+              Share this code with friends or copy-paste this code below to join the group!
               <br />
               <span style={{ fontSize: "20px" }}>{groupCode}</span>
             </p>
@@ -98,7 +136,7 @@ function Profile({ goToHome }) {
             type="text"
             placeholder="Enter group code"
             value={joinGroupCode}
-            onChange={(e) => setJoinGroupCode(e.target.value)}
+            onChange={(e) => setJoinGroupCode(e.target.value.toUpperCase())} // Automatically capitalize
             style={{
               padding: "10px",
               fontSize: "16px",
@@ -136,7 +174,6 @@ function Profile({ goToHome }) {
     );
   }
 
-  // Show NewUser or ReturnUser component based on selection
   if (currentPage === "returning") {
     return <ReturnUser goToHome={() => setCurrentPage("")} />;
   }
@@ -145,10 +182,8 @@ function Profile({ goToHome }) {
     return <NewUser goToHome={() => setCurrentPage("")} />;
   }
 
-  // Default profile page
   return (
     <div style={{ textAlign: "center", marginTop: "20px", fontFamily: "Arial, sans-serif" }}>
-      {/* Home Button */}
       <div style={{ position: "absolute", top: "20px", left: "20px" }}>
         <button
           onClick={goToHome}
