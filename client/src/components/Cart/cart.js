@@ -26,7 +26,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                 <div className="quantity-controls">
                                     <button
                                         className="quantity-button"
-                                        onClick={() => onDecreaseQuantity(index)}
+                                        onClick={() => onDecreaseQuantity(item)}
                                         disabled={item.quantity <= 1}
                                     >
                                         <AiOutlineMinus />
@@ -34,7 +34,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                     <div className="item-quantity">Quantity: {item.quantity}</div>
                                     <button
                                         className="quantity-button"
-                                        onClick={() => onIncreaseQuantity(index)}
+                                        onClick={() => onIncreaseQuantity(item)}
                                     >
                                         <AiOutlinePlus />
                                     </button>
@@ -105,20 +105,90 @@ const App = () => {
         setCurrentPage('checkout');
     };
 
-    const increaseQuantity = (index) => {
-        const updatedCart = [...individualCart];
-        updatedCart[index].quantity += 1;
-        setIndividualCart(updatedCart);
-        setSharedCart(updatedCart);
-    };
+    const increaseQuantity = (product) => {
+        const payload = {
+            group_id: 1,
+            product_name: product.name,
+            added_by_user: 1,
+            action: "add",
+            quantity: 1
+        };
+    
+        // Make the API call
+        fetch('http://localhost:5001/api/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to update cart');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data.message); // Log success message
+                setIndividualCart((prevCart) => {
+                    const existingItem = prevCart.find((item) => item.name === product.name);
+                    if (existingItem) {
+                        return prevCart.map((item) =>
+                            item.name === product.name
+                                ? { ...item, quantity: (item.quantity || 1) + 1 }
+                                : item
+                        );
+                    } else {
+                        return [...prevCart, { ...product, quantity: 1 }];
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('Error adding to cart:', error);
+            });
+    }
 
-    const decreaseQuantity = (index) => {
-        const updatedCart = [...individualCart];
-        if (updatedCart[index].quantity > 1) {
-            updatedCart[index].quantity -= 1;
-            setIndividualCart(updatedCart);
-            setSharedCart(updatedCart);
-        }
+    const decreaseQuantity = (product) => {
+        const payload = {
+            group_id: 1,
+            product_name: product.name,
+            added_by_user: 1,
+            action: "subtract",
+            quantity: 1
+        };
+    
+        // Make the API call
+        fetch('http://localhost:5001/api/cart/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to update cart');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data.message); // Log success message
+                setIndividualCart((prevCart) => {
+                    const existingItem = prevCart.find((item) => item.name === product.name);
+                    if (existingItem) {
+                        return prevCart.map((item) =>
+                            item.name === product.name
+                                ? { ...item, quantity: (item.quantity || 1) - 1 }
+                                : item
+                        );
+                    } else {
+                        return [...prevCart, { ...product, quantity: 1 }];
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('Error adding to cart:', error);
+            });
     };
 
     if (currentPage === 'checkout') {

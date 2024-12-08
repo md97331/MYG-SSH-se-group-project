@@ -1,7 +1,6 @@
 // HomePage.js
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import React, { useState } from 'react';
 import Cart from '../Cart/cart'; // Import Cart
 import Profile from '../Profile/Profile'; // Import Profile
 import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
