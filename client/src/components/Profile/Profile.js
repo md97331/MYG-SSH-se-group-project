@@ -65,6 +65,73 @@ function Profile({ goToHome }) {
         >
           Logout
         </button>
+
+        {/* Create a Group Code */}
+        <div style={{ marginTop: "20px" }}>
+          <button
+            onClick={handleCreateGroupCode}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#FFC107",
+              color: "#000",
+              fontSize: "16px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              marginRight: "10px",
+            }}
+          >
+            Create a Group Code
+          </button>
+          {groupCode && (
+            <p style={{ color: "green", fontWeight: "bold", marginTop: "10px" }}>
+              Share this code with friends or copy paste this code below to join the group!
+              <br />
+              <span style={{ fontSize: "20px" }}>{groupCode}</span>
+            </p>
+          )}
+        </div>
+
+        {/* Join a Group */}
+        <div style={{ marginTop: "20px" }}>
+          <input
+            type="text"
+            placeholder="Enter group code"
+            value={joinGroupCode}
+            onChange={(e) => setJoinGroupCode(e.target.value)}
+            style={{
+              padding: "10px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+              marginRight: "10px",
+            }}
+          />
+          <button
+            onClick={handleJoinGroup}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#007BFF",
+              color: "#fff",
+              fontSize: "16px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Join Group
+          </button>
+          {joinGroupMessage && (
+            <p
+              style={{
+                color: joinGroupMessage.startsWith("You joined") ? "green" : "red",
+                marginTop: "10px",
+              }}
+            >
+              {joinGroupMessage}
+            </p>
+          )}
+        </div>
       </div>
     );
   }
@@ -125,68 +192,6 @@ function Profile({ goToHome }) {
       >
         New User
       </button>
-
-      {/* Create a Group Code */}
-      <div style={{ marginTop: "20px" }}>
-        <button
-          onClick={handleCreateGroupCode}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#FFC107",
-            color: "#000",
-            fontSize: "16px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            marginRight: "10px",
-          }}
-        >
-          Create a Group Code
-        </button>
-        {groupCode && (
-          <p style={{ color: "green", fontWeight: "bold", marginTop: "10px" }}>
-            Group code is now created! Share it with friends or input it in "Join a Group".
-            <br />
-            <span style={{ fontSize: "20px" }}>{groupCode}</span>
-          </p>
-        )}
-      </div>
-
-      {/* Join a Group */}
-      <div style={{ marginTop: "20px" }}>
-        <input
-          type="text"
-          placeholder="Enter group code"
-          value={joinGroupCode}
-          onChange={(e) => setJoinGroupCode(e.target.value)}
-          style={{
-            padding: "10px",
-            fontSize: "16px",
-            borderRadius: "5px",
-            border: "1px solid #ccc",
-            marginRight: "10px",
-          }}
-        />
-        <button
-          onClick={handleJoinGroup}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#007BFF",
-            color: "#fff",
-            fontSize: "16px",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-          }}
-        >
-          Join Group
-        </button>
-        {joinGroupMessage && (
-          <p style={{ color: joinGroupMessage.startsWith("You joined") ? "green" : "red", marginTop: "10px" }}>
-            {joinGroupMessage}
-          </p>
-        )}
-      </div>
     </div>
   );
 }
