@@ -1,13 +1,17 @@
+// index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles/index.css';
 import HomePage from './components/HomePage/HomePage';
+import { AuthProvider } from './AuthContext';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <HomePage />
+    <AuthProvider>
+      <HomePage />
+    </AuthProvider>
   </React.StrictMode>
 );
 
