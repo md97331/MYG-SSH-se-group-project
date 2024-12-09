@@ -46,7 +46,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                 )}
                             </div>
                             <div className="item-price">
-                                ${item.price.toFixed(2)}
+                                ${item.price ? item.price.toFixed(2) : '1.00'}
                             </div>
                             <button className="remove-button" onClick={() => onRemoveItem(index)}>
                                 <FaTrashAlt />
@@ -76,9 +76,12 @@ const App = () => {
             .then((response) => response.json())
             .then(async (data) => {
                 if (data.cart) {
+
+                    const uncheckedItems = data.cart.filter(item => item.is_checked_out === 0);
+
                     // Fetch usernames for each added_by_user
                     const cartWithUsernames = await Promise.all(
-                        data.cart.map(async (item) => {
+                        uncheckedItems.map(async (item) => {
                             const userResponse = await fetch(`http://localhost:5001/api/users/${item.added_by_user}`);
                             const userData = await userResponse.json();
                             return {
@@ -88,13 +91,15 @@ const App = () => {
                                 quantity: item.quantity,
                                 price: item.price || 1.0,
                                 addedBy: userData.user.username || "Unknown User",
+                                addById: userData.user.id
                             };
                         })
                     );
-    
+
                     // Set the shared cart
                     setSharedCart(cartWithUsernames);
-                    setIndividualCart(cartWithUsernames);
+                    const userCart = cartWithUsernames.filter(item => item.addById === userId);
+                    setIndividualCart(userCart);
                 }
             })
             .catch((error) => console.error("Error fetching cart:", error));
@@ -190,10 +195,6 @@ const App = () => {
             });
     };
 
-    if (currentPage === 'checkout') {
-        return <Checkout />;
-    }
-
     const removeItemFromIndividualCart = (index) => {
         const itemId = individualCart[index].id;
         fetch('http://localhost:5001/api/cart/remove', {
@@ -210,6 +211,100 @@ const App = () => {
             })
             .catch((error) => console.error("Error removing item:", error));
     };
+
+    const onPlaceOrder = async (event, cardNumber, cvv, expirationDate, isDateInvalid) => {
+        event.preventDefault(); // Prevent default form submission
+    
+        // Validate fields
+        if (!cardNumber || cardNumber.length !== 16) {
+            alert("Please enter a valid 16-digit card number.");
+            return;
+        }
+        if (!cvv || cvv.length !== 3) {
+            alert("Please enter a valid 3-digit CVV.");
+            return;
+        }
+        if (!expirationDate || isDateInvalid) {
+            alert("Please enter a valid expiration date.");
+            return;
+        }
+    
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const nameOnCard = document.getElementById('nameOnCard').value.trim();
+    
+        if (!name || !email || !address || !nameOnCard) {
+            alert("All fields are required. Please fill in the missing information.");
+            return;
+        }
+    
+        const payload = {
+            group_id: groupId,
+            user_id: userId
+        };
+    
+        try {
+            // Checkout API call
+            const checkoutResponse = await fetch('http://localhost:5001/api/cart/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+    
+            if (!checkoutResponse.ok) {
+                throw new Error(`Failed to checkout cart id: ${userId} groupId: ${groupId}`);
+            }
+    
+            const checkoutData = await checkoutResponse.json();
+            console.log(checkoutData.message); // Log success message
+            alert('Order placed successfully!');
+    
+            // Fetch updated cart
+            const cartResponse = await fetch(`http://localhost:5001/api/cart/${groupId}`);
+            const cartData = await cartResponse.json();
+    
+            if (cartData.cart) {
+                const uncheckedItems = cartData.cart.filter(
+                    item => item.product_name && item.quantity > 0 && item.is_checked_out === 0
+                );
+    
+                // Fetch usernames and enrich data
+                const validItems = await Promise.all(
+                    uncheckedItems.map(async (item) => {
+                        const userResponse = await fetch(`http://localhost:5001/api/users/${item.added_by_user}`);
+                        const userData = await userResponse.json();
+                        return {
+                            id: item.id,
+                            name: item.product_name,
+                            image: item.image_url || "https://via.placeholder.com/50",
+                            quantity: item.quantity,
+                            price: item.price || 1.0,
+                            addedBy: userData.user.username || "Unknown User",
+                            addedByUserId: item.added_by_user,
+                        };
+                    })
+                );
+    
+                // Update cart state
+                setSharedCart(validItems);
+                const userCart = validItems.filter(item => item.addedByUserId === userId);
+                setIndividualCart(userCart);
+            }
+        } catch (error) {
+            console.error('Error checking out cart:', error);
+            alert('Failed to place order. Please try again.');
+        }
+    
+        setCurrentPage({ name: 'cart' });
+    };
+    
+
+    if (currentPage === 'checkout') {
+        return <Checkout onPlaceOrder={onPlaceOrder} />;
+    }
 
     return (
         <div>

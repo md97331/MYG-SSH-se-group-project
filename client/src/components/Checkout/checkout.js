@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../AuthContext';
 import Cart from "../Cart/cart";
 import './checkout.css';
 
-const Checkout = () => {
+const Checkout = ({onPlaceOrder}) => {
     const { user } = useContext(AuthContext);
     const groupId = user.groupId;
     const [cardNumber, setCardNumber] = useState('');
@@ -66,35 +66,6 @@ const Checkout = () => {
 
     };
 
-    const onPlaceOrder = () => {
-        const payload = {
-            group_id: groupId,
-        };
-
-        // Make the API call
-        fetch('http://localhost:5001/api/cart/checkout', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Failed to checkout cart');
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log(data.message); // Log success message
-                alert('Order placed successfully!');
-            })
-            .catch((error) => {
-                console.error('Error checking out cart:', error);
-                alert('Failed to place order. Please try again.');
-            });
-    };
-
 
     return (
         <div className="checkout-container">
@@ -138,7 +109,7 @@ const Checkout = () => {
                     <label htmlFor="nameOnCard">Name on Card</label>
                     <input type="text" id="nameOnCard" placeholder="Enter the name on card" required />
                 </div>
-                <button className="placeOrder-button" type="submit" onClick={onPlaceOrder}>
+                <button className="placeOrder-button" type="submit"  onClick={(event) => onPlaceOrder(event, cardNumber, cvv, expirationDate, isDateInvalid)}>
                     Place Order
                 </button>
             </form>
