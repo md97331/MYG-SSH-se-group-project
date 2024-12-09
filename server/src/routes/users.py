@@ -13,6 +13,10 @@ def register_user():
     password_hash = data.get('password_hash')
     group_id = data.get('group_id', None)
 
+    # Validate required fields
+    if not username or not password_hash:
+        return jsonify({"error": "Missing required fields"}), 500
+
     try:
         query = """
             INSERT INTO users_table (username, password_hash, group_id)
