@@ -19,6 +19,10 @@ def create_group():
     data = request.get_json()
     created_by_user = data.get('created_by_user')
 
+    # Validate required fields
+    if not created_by_user:
+        return jsonify({"error": "Missing 'created_by_user' field"}), 500
+
     try:
         group_code = generate_group_code()
         query = """

@@ -18,12 +18,22 @@ def execute_query(query, params=None, fetchone=False):
     cursor = connection.cursor(dictionary=True)
     try:
         cursor.execute(query, params)
+        
+        # Return affected row count for DELETE/INSERT/UPDATE queries
+        if query.strip().upper().startswith(("INSERT", "UPDATE", "DELETE")):
+            affected_rows = cursor.rowcount
+            connection.commit()
+            return affected_rows
+
+        # Fetch results for SELECT queries
         if fetchone:
             result = cursor.fetchone()
         else:
             result = cursor.fetchall()
+
         connection.commit()
         return result
+
     except Exception as e:
         raise Exception(f"Database error: {str(e)}")
     finally:

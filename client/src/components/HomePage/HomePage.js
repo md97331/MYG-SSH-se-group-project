@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+// HomePage.js
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
 import Cart from '../Cart/cart'; // Import Cart
 import Profile from '../Profile/Profile'; // Import Profile
+import { AuthContext } from '../../AuthContext'; // Import AuthContext
 
 function HomePage() {
+    const { user } = useContext(AuthContext); // Access user from context
     const [currentPage, setCurrentPage] = useState({ name: 'home', storeId: null }); // Tracks the current page
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
@@ -47,15 +50,31 @@ function HomePage() {
 
     // Render the appropriate page based on `currentPage`
     if (currentPage.name === 'stores') {
-        return <StoresPage storeId={currentPage.storeId} addToCart={addToCart} goToHome={() => setCurrentPage({ name: 'home', storeId: null })} goToCart={() => setCurrentPage({ name: 'cart', storeId: null })} />;
+        return (
+            <StoresPage
+                storeId={currentPage.storeId}
+                addToCart={addToCart}
+                goToHome={() => setCurrentPage({ name: 'home', storeId: null })}
+                goToCart={() => setCurrentPage({ name: 'cart', storeId: null })}
+            />
+        );
     }
 
     if (currentPage.name === 'cart') {
-        return <Cart cart={cart} goToHome={() => setCurrentPage({ name: 'home', storeId: null })} />;
+        return (
+            <Cart
+                cart={cart}
+                goToHome={() => setCurrentPage({ name: 'home', storeId: null })}
+            />
+        );
     }
 
     if (currentPage.name === 'profile') {
-        return <Profile goToHome={() => setCurrentPage({ name: 'home', storeId: null })} />;
+        return (
+            <Profile
+                goToHome={() => setCurrentPage({ name: 'home', storeId: null })}
+            />
+        );
     }
 
     // Render the home page
@@ -91,7 +110,9 @@ function HomePage() {
                 </button>
             </div>
 
-            <h1>Welcome to Group Delivery!</h1>
+            <h1>
+                {user ? `Welcome, ${user.username}!` : 'Welcome to Group Delivery!'}
+            </h1>
             <p>Find your supermarket below</p>
 
             {/* Location Input */}
@@ -164,7 +185,6 @@ function HomePage() {
                             >
                                 Visit Store
                             </button>
-
                         </div>
                     ))}
                 </div>
