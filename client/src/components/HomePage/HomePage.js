@@ -85,7 +85,7 @@ const addToCart = (product) => {
                     });
                 })
                 .catch((error) => {
-                    console.error('Error adding to cart:', error);
+                    console.error(`Error adding to cart: id: ${userId} groupid: ${user} `, error);
                 });
         };
 

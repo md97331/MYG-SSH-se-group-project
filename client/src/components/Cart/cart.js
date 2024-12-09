@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
 import { FaTrashAlt } from 'react-icons/fa';
 import { AuthContext } from '../../AuthContext';
@@ -10,9 +10,9 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
         <div className="cart-container">
             <h2>{title}</h2>
             {isIndividualTab && cartItems.length > 0 && (
-                    <button className="checkout-button"  onClick={() => onCheckout()}>
-                        Checkout
-                    </button>
+                <button className="checkout-button" onClick={() => onCheckout()}>
+                    Checkout
+                </button>
             )}
             <ul className="cart-list">
                 {cartItems.length === 0 ? (
@@ -39,6 +39,11 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                         <AiOutlinePlus />
                                     </button>
                                 </div>
+                                {!isIndividualTab && (
+                                    <div className="added-by">
+                                        Added by: {item.addedBy}
+                                    </div>
+                                )}
                             </div>
                             <div className="item-price">
                                 ${item.price.toFixed(2)}
@@ -63,44 +68,37 @@ const App = () => {
     const [activeTab, setActiveTab] = useState('individual');
     const { user } = useContext(AuthContext);
     const userId = user.id;
-    const groupId = user.groupId;
+    const groupId = user.group_id;
 
     // Fetch cart items from the backend
     useEffect(() => {
         fetch(`http://localhost:5001/api/cart/${groupId}`)
-            .then((response) => {
-                console.log("Raw Response:", response);
-                return response.json();
-            })
-            .then((data) => {
+            .then((response) => response.json())
+            .then(async (data) => {
                 if (data.cart) {
-                    // Filter individual cart items based on `added_by_user`
-                    const userItems = data.cart.filter((item) => item.added_by_user === userId);
-                    setIndividualCart(
-                        userItems.map((item) => ({
-                            id: item.id,
-                            name: item.product_name,
-                            image: item.image_url || "https://via.placeholder.com/50",
-                            quantity: item.quantity,
-                            price: item.price || 1.0, // Default price if missing
-                        }))
+                    // Fetch usernames for each added_by_user
+                    const cartWithUsernames = await Promise.all(
+                        data.cart.map(async (item) => {
+                            const userResponse = await fetch(`http://localhost:5001/api/users/${item.added_by_user}`);
+                            const userData = await userResponse.json();
+                            return {
+                                id: item.id,
+                                name: item.product_name,
+                                image: item.image_url || "https://via.placeholder.com/50",
+                                quantity: item.quantity,
+                                price: item.price || 1.0,
+                                addedBy: userData.user.username || "Unknown User",
+                            };
+                        })
                     );
-
-
-                    // Set shared cart with all items
-                    setSharedCart(
-                        data.cart.map((item) => ({
-                            id: item.id,
-                            name: item.product_name,
-                            image: item.image_url || "https://via.placeholder.com/50",
-                            quantity: item.quantity,
-                            price: item.price || 1.0,
-                        }))
-                    );
+    
+                    // Set the shared cart
+                    setSharedCart(cartWithUsernames);
+                    setIndividualCart(cartWithUsernames);
                 }
             })
             .catch((error) => console.error("Error fetching cart:", error));
-    }, []);
+    }, [groupId]);
 
     const handleCheckout = () => {
         setCurrentPage('checkout');
@@ -114,7 +112,7 @@ const App = () => {
             action: "add",
             quantity: 1
         };
-    
+
         // Make the API call
         fetch('http://localhost:5001/api/cart/update', {
             method: 'POST',
@@ -157,7 +155,7 @@ const App = () => {
             action: "subtract",
             quantity: 1
         };
-    
+
         // Make the API call
         fetch('http://localhost:5001/api/cart/update', {
             method: 'POST',
