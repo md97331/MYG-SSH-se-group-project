@@ -1,18 +1,20 @@
 // HomePage.js
-import React, { useState, useContext } from 'react';
 import axios from 'axios';
+import React, { useContext, useState } from 'react';
+import { AuthContext } from '../../AuthContext'; // Import AuthContext
 import Cart from '../Cart/cart'; // Import Cart
 import Profile from '../Profile/Profile'; // Import Profile
 import StoresPage from '../StoresPage/StoresPage'; // Import StoresPage
-import { AuthContext } from '../../AuthContext'; // Import AuthContext
 
 function HomePage() {
-    const { user } = useContext(AuthContext); // Access user from context
+    const { user } = useContext(AuthContext);
     const [currentPage, setCurrentPage] = useState({ name: 'home', storeId: null }); // Tracks the current page
     const [zipCode, setZipCode] = useState('');
     const [stores, setStores] = useState([]);
     const [error, setError] = useState(''); // Error message state for ZIP code validation
     const [cart, setCart] = useState([]); // Cart state
+    const userId = parseInt(user?.id, 10);
+    const groupId = parseInt(user?.group_id, 10);
 
     // Handle ZIP code submission
     const handleZipSubmit = async () => {
@@ -46,9 +48,9 @@ function HomePage() {
 
 const addToCart = (product) => {
             const payload = {
-                group_id: user.group_id,
+                group_id: groupId,
                 product_name: product.name,
-                added_by_user: user.id,
+                added_by_user: userId,
                 action: "add",
                 quantity: 1
             };
