@@ -67,8 +67,8 @@ const App = () => {
     const [sharedCart, setSharedCart] = useState([]);
     const [activeTab, setActiveTab] = useState('individual');
     const { user } = useContext(AuthContext);
-    const userId = user.id;
-    const groupId = user.group_id;
+    const userId = user?.id || null;
+    const groupId = user?.group_id || null;
 
     // Fetch cart items from the backend
     useEffect(() => {
