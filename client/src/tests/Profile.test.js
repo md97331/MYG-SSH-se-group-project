@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Profile from '../components/Profile/Profile';
 import { AuthContext } from '../AuthContext';
@@ -63,10 +63,8 @@ describe('Profile Component', () => {
     const createGroupButton = screen.getByRole('button', { name: /Create a Group Code/i });
     fireEvent.click(createGroupButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Share this code with friends/i)).toBeInTheDocument();
-      expect(screen.getByText(/ABC123/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Share this code with friends/i)).toBeInTheDocument();
+    expect(await screen.findByText(/ABC123/i)).toBeInTheDocument();
   });
 
   test('handles failed group creation', async () => {
@@ -80,9 +78,7 @@ describe('Profile Component', () => {
     const createGroupButton = screen.getByRole('button', { name: /Create a Group Code/i });
     fireEvent.click(createGroupButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Failed to create group. Please try again./i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Failed to create group. Please try again./i)).toBeInTheDocument();
   });
 
   test('handles joining a group', async () => {
@@ -99,10 +95,8 @@ describe('Profile Component', () => {
     fireEvent.change(joinInput, { target: { value: 'XYZ789' } });
     fireEvent.click(joinButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/You joined group XYZ789!/i)).toBeInTheDocument();
-      expect(mockLogin).toHaveBeenCalledWith({ ...mockUser, group_id: 'XYZ789' });
-    });
+    expect(await screen.findByText(/You joined group XYZ789!/i)).toBeInTheDocument();
+    expect(mockLogin).toHaveBeenCalledWith({ ...mockUser, group_id: 'XYZ789' });
   });
 
   test('displays error for invalid group code format', () => {
@@ -114,6 +108,8 @@ describe('Profile Component', () => {
     fireEvent.change(joinInput, { target: { value: '123' } }); // Invalid format
     fireEvent.click(joinButton);
 
-    expect(screen.getByText(/Invalid group code. Please enter a 6-character alphanumeric code./i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Invalid group code. Please enter a 6-character alphanumeric code./i)
+    ).toBeInTheDocument();
   });
 });

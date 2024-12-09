@@ -22,6 +22,11 @@ test('renders Store Products page with Home and Cart buttons', () => {
   expect(screen.getByRole('button', { name: '🏠' })).toBeInTheDocument(); // Home button
 });
 
+test("renders store page component", () => {
+    render(<StoresPage />);
+    expect(screen.getByText(/Store/i)).toBeInTheDocument();
+  });
+
 test('fetches and displays products from API', async () => {
   axios.get.mockResolvedValue({
     data: {
@@ -47,7 +52,7 @@ test('fetches and displays products from API', async () => {
   );
 
   // Wait for the products to load
-  await waitFor(() => expect(screen.getByText('Test Category')).toBeInTheDocument());
+  await screen.findByText('Test Category');
   expect(screen.getByText('Test Product 1')).toBeInTheDocument();
   expect(screen.getByText('$5.99')).toBeInTheDocument();
 });
@@ -65,7 +70,7 @@ test('displays predefined products when API call fails', async () => {
   );
 
   // Wait for error handling
-  await waitFor(() => expect(screen.getByText(/Failed to load products/i)).toBeInTheDocument());
+  await screen.findByText(/Failed to load products/i);
 });
 
 test('handles add to cart functionality', async () => {
@@ -93,7 +98,7 @@ test('handles add to cart functionality', async () => {
   );
 
   // Wait for the products to load
-  await waitFor(() => screen.getByText('Test Product 1'));
+  await screen.findByText('Test Product 1');
 
   const addToCartButton = screen.getAllByText('+ Add to Cart')[0];
   fireEvent.click(addToCartButton);

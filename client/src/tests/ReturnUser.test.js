@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ReturnUser from '../components/Profile/ReturnUser';
 import { AuthContext } from '../AuthContext';
@@ -31,6 +31,11 @@ describe('ReturnUser Component', () => {
     expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
   });
 
+  test('renders return user component', () => {
+    render(<ReturnUser />);
+    expect(screen.getByText(/Returning User/i)).toBeInTheDocument();
+  });
+
   test('handles successful login', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
@@ -50,14 +55,13 @@ describe('ReturnUser Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
-    await waitFor(() => {
-      expect(mockLogin).toHaveBeenCalledWith({
-        id: 1,
-        username: 'testuser',
-        group_id: null,
-      });
-      expect(mockGoToHome).toHaveBeenCalled();
+    expect(await screen.findByText(/User successfully logged in!/i)).toBeInTheDocument();
+    expect(mockLogin).toHaveBeenCalledWith({
+      id: 1,
+      username: 'testuser',
+      group_id: null,
     });
+    expect(mockGoToHome).toHaveBeenCalled();
   });
 
   test('handles failed login', async () => {
@@ -77,9 +81,7 @@ describe('ReturnUser Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
 
-    await waitFor(() => {
-      expect(screen.getByText(/Invalid username or password/i)).toBeInTheDocument();
-      expect(mockLogin).not.toHaveBeenCalled();
-    });
+    expect(await screen.findByText(/Invalid username or password/i)).toBeInTheDocument();
+    expect(mockLogin).not.toHaveBeenCalled();
   });
 });
