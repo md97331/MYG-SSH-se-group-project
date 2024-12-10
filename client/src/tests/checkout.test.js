@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
-import Checkout from "./Checkout";
-import { AuthContext } from "../../AuthContext";
+import Checkout from "../components/Checkout/checkout";
+import { AuthContext } from "../AuthContext";
 
 describe("Checkout Component", () => {
     const mockUser = { username: "testuser", id: 1, groupId: "ABC123" };
