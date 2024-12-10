@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import axios from 'axios';
-import Cart from '../Cart/cart';
+import Cart from '../components/Cart/cart';
 import { AuthContext } from '../../AuthContext';
 
 jest.mock('axios');
