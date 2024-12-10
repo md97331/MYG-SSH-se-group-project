@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import axios from 'axios';
 import Cart from '../components/Cart/cart';
 import { AuthContext } from '../AuthContext';
@@ -63,9 +63,10 @@ describe('Cart Component', () => {
         expect(screen.getByText('Product A')).toBeInTheDocument();
         expect(screen.getByText('Product B')).toBeInTheDocument();
 
-        // Check total price calculation
-        await screen.findByText(/Total: \$35.00/);
-        expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
+        // Wait for total price to update
+        await waitFor(() => {
+            expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
+        });
     });
 
     it('calls onRemoveItem when remove button is clicked', () => {
@@ -91,7 +92,7 @@ describe('Cart Component', () => {
         expect(mockRemoveItem).toHaveBeenCalledWith(0); // Ensure correct index is passed
     });
 
-    it('updates total price when quantity changes', async () => {
+    it('updates total price when quantity changes', () => {
         const mockIncreaseQuantity = jest.fn();
 
         render(
@@ -156,7 +157,8 @@ describe('Cart Component', () => {
         );
 
         // Check error message for price fetch
-        await screen.findByText(/Error fetching price/);
-        expect(screen.getByText(/Error fetching price/)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(/Error fetching price/)).toBeInTheDocument();
+        });
     });
 });
