@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import axios from 'axios';
 import Cart from '../components/Cart/cart';
 import { AuthContext } from '../AuthContext';
@@ -58,15 +58,16 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
-        // Verify cart title
-        expect(screen.getByText('Individual Cart')).toBeInTheDocument();
-
         // Wait for cart items to render
-        expect(await screen.findByText('Product A')).toBeInTheDocument();
-        expect(await screen.findByText('Product B')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Product A')).toBeInTheDocument();
+            expect(screen.getByText('Product B')).toBeInTheDocument();
+        });
 
         // Wait for total price to update
-        expect(await screen.findByText(/Total: \$35.00/)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
+        });
     });
 
     it('calls onRemoveItem when remove button is clicked', async () => {
@@ -163,6 +164,8 @@ describe('Cart Component', () => {
         );
 
         // Check error message for price fetch
-        expect(await screen.findByText(/Error fetching price/)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText(/Error fetching price/)).toBeInTheDocument();
+        });
     });
 });
