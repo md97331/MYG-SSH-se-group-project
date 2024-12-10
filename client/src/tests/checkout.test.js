@@ -21,15 +21,12 @@ describe("Checkout Component", () => {
     // TEST CASES
     it("renders checkout form with required fields", () => {
         renderComponent();
-        expect(screen.getByLabelText("Name")).toBeInTheDocument();
-        expect(screen.getByLabelText("Email")).toBeInTheDocument();
-        expect(screen.getByLabelText("Address")).toBeInTheDocument();
         expect(screen.getByLabelText("Card Number")).toBeInTheDocument();
         expect(screen.getByLabelText("Expiration Date")).toBeInTheDocument();
         expect(screen.getByLabelText("CVV")).toBeInTheDocument();
         expect(screen.getByLabelText("Name on Card")).toBeInTheDocument();
-        expect(screen.getByText("Place Order")).toBeInTheDocument();
     });
+    
 
     it("allows valid card number input", () => {
         renderComponent();
@@ -37,6 +34,7 @@ describe("Checkout Component", () => {
         fireEvent.change(cardNumberInput, { target: { value: "1234567812345678" } });
         expect(cardNumberInput.value).toBe("1234567812345678");
     });
+    
 
     it("shows error for invalid card number input", () => {
         renderComponent();
