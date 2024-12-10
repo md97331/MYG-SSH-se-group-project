@@ -1,11 +1,40 @@
+import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { AiOutlineMinus, AiOutlinePlus } from 'react-icons/ai';
+
 import { FaTrashAlt } from 'react-icons/fa';
 import { AuthContext } from '../../AuthContext';
 import Checkout from '../Checkout/checkout';
 import './cart.css';
 
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
+    const [prices, setPrices] = useState({});
+    const [errors, setErrors] = useState({});
+
+    const handleGetPrice = async (productName, index) => {
+        try {
+            const response = await axios.get(`http://localhost:5001/api/products/search?name=${encodeURIComponent(productName)}`);
+            if (response.data && response.data.products && response.data.products.length > 0) {
+                const product = response.data.products[0]; // Assuming the first product is the relevant one
+                setPrices((prevPrices) => ({ ...prevPrices, [index]: product.price }));
+            } else {
+                setPrices((prevPrices) => ({ ...prevPrices, [index]: 'N/A' }));
+            }
+        } catch (err) {
+            console.error(`Failed to fetch price for ${productName}:`, err);
+            setErrors((prevErrors) => ({ ...prevErrors, [index]: 'Error fetching price' }));
+        }
+    };
+
+    useEffect(() => {
+        // Fetch prices for all cart items
+        cartItems.forEach((item, index) => {
+            if (!prices[index]) {
+                handleGetPrice(item.name, index);
+            }
+        });
+    }, [cartItems]);
+
     return (
         <div className="cart-container">
             <h2>{title}</h2>
@@ -14,6 +43,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                     Checkout
                 </button>
             )}
+
             <ul className="cart-list">
                 {cartItems.length === 0 ? (
                     <li className="empty-cart">No items in the cart</li>
@@ -46,7 +76,11 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                                 )}
                             </div>
                             <div className="item-price">
-                                ${item.price ? item.price.toFixed(2) : '1.00'}
+                                {errors[index] ? (
+                                    <span className="error">{errors[index]}</span>
+                                ) : (
+                                    <span>${prices[index] * item.quantity !== undefined ? prices[index] * item.quantity : 'Loading...'}</span>
+                                )}
                             </div>
                             <button className="remove-button" onClick={() => onRemoveItem(index)}>
                                 <FaTrashAlt />
@@ -58,6 +92,7 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
         </div>
     );
 };
+
 
 
 
@@ -78,6 +113,7 @@ const App = () => {
                 if (data.cart) {
 
                     const uncheckedItems = data.cart.filter(item => item.is_checked_out === 0);
+                    //http://localhost:5001/api/products/search?name=banana
 
                     // Fetch usernames for each added_by_user
                     const cartWithUsernames = await Promise.all(
@@ -89,7 +125,7 @@ const App = () => {
                                 name: item.product_name,
                                 image: item.image_url || "https://via.placeholder.com/50",
                                 quantity: item.quantity,
-                                price: item.price || 1.0,
+                                price: await fetch(`http://localhost:5001/api/products/search?name=${item.product_name}`).price || 1.0,
                                 addedBy: userData.user.username || "Unknown User",
                                 addById: userData.user.id
                             };
@@ -214,7 +250,7 @@ const App = () => {
 
     const onPlaceOrder = async (event, cardNumber, cvv, expirationDate, isDateInvalid) => {
         event.preventDefault(); // Prevent default form submission
-    
+
         // Validate fields
         if (!cardNumber || cardNumber.length !== 16) {
             alert("Please enter a valid 16-digit card number.");
@@ -228,22 +264,22 @@ const App = () => {
             alert("Please enter a valid expiration date.");
             return;
         }
-    
+
         const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
         const address = document.getElementById('address').value.trim();
         const nameOnCard = document.getElementById('nameOnCard').value.trim();
-    
+
         if (!name || !email || !address || !nameOnCard) {
             alert("All fields are required. Please fill in the missing information.");
             return;
         }
-    
+
         const payload = {
             group_id: groupId,
             user_id: userId
         };
-    
+
         try {
             // Checkout API call
             const checkoutResponse = await fetch('http://localhost:5001/api/cart/checkout', {
@@ -253,24 +289,24 @@ const App = () => {
                 },
                 body: JSON.stringify(payload),
             });
-    
+
             if (!checkoutResponse.ok) {
                 throw new Error(`Failed to checkout cart id: ${userId} groupId: ${groupId}`);
             }
-    
+
             const checkoutData = await checkoutResponse.json();
             console.log(checkoutData.message); // Log success message
             alert('Order placed successfully!');
-    
+
             // Fetch updated cart
             const cartResponse = await fetch(`http://localhost:5001/api/cart/${groupId}`);
             const cartData = await cartResponse.json();
-    
+
             if (cartData.cart) {
                 const uncheckedItems = cartData.cart.filter(
                     item => item.product_name && item.quantity > 0 && item.is_checked_out === 0
                 );
-    
+
                 // Fetch usernames and enrich data
                 const validItems = await Promise.all(
                     uncheckedItems.map(async (item) => {
@@ -281,13 +317,13 @@ const App = () => {
                             name: item.product_name,
                             image: item.image_url || "https://via.placeholder.com/50",
                             quantity: item.quantity,
-                            price: item.price || 1.0,
+                            price: await fetch(`http://localhost:5001/api/products/search?name=${item.product_name}`).price * item.quantity|| 1.0,
                             addedBy: userData.user.username || "Unknown User",
                             addedByUserId: item.added_by_user,
                         };
                     })
                 );
-    
+
                 // Update cart state
                 setSharedCart(validItems);
                 const userCart = validItems.filter(item => item.addedByUserId === userId);
@@ -297,10 +333,10 @@ const App = () => {
             console.error('Error checking out cart:', error);
             alert('Failed to place order. Please try again.');
         }
-    
+
         setCurrentPage({ name: 'cart' });
     };
-    
+
 
     if (currentPage === 'checkout') {
         return <Checkout onPlaceOrder={onPlaceOrder} />;
