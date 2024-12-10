@@ -61,12 +61,14 @@ describe('Cart Component', () => {
         // Verify cart title
         expect(screen.getByText('Individual Cart')).toBeInTheDocument();
 
-        // Wait for cart items and total price to render
-        await waitFor(() => {
-            expect(screen.getByText('Product A')).toBeInTheDocument();
-            expect(screen.getByText('Product B')).toBeInTheDocument();
-            expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
-        });
+        // Wait for the first item to render
+        await waitFor(() => expect(screen.getByText('Product A')).toBeInTheDocument());
+
+        // Wait for the second item to render
+        await waitFor(() => expect(screen.getByText('Product B')).toBeInTheDocument());
+
+        // Wait for total price to update
+        await waitFor(() => expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument());
     });
 
     it('calls onRemoveItem when remove button is clicked', async () => {
@@ -87,9 +89,7 @@ describe('Cart Component', () => {
         );
 
         // Wait for cart items to render
-        await waitFor(() => {
-            expect(screen.getByText('Product A')).toBeInTheDocument();
-        });
+        await waitFor(() => expect(screen.getByText('Product A')).toBeInTheDocument());
 
         // Simulate removing an item
         const removeButtons = screen.getAllByRole('button', { name: /trash/i });
@@ -115,9 +115,7 @@ describe('Cart Component', () => {
         );
 
         // Wait for cart items to render
-        await waitFor(() => {
-            expect(screen.getByText('Product A')).toBeInTheDocument();
-        });
+        await waitFor(() => expect(screen.getByText('Product A')).toBeInTheDocument());
 
         // Simulate increasing quantity
         const increaseButtons = screen.getAllByRole('button', { name: /plus/i });
@@ -167,8 +165,6 @@ describe('Cart Component', () => {
         );
 
         // Wait for error message to display
-        await waitFor(() => {
-            expect(screen.getByText(/Error fetching price/)).toBeInTheDocument();
-        });
+        await waitFor(() => expect(screen.getByText(/Error fetching price/)).toBeInTheDocument());
     });
 });
