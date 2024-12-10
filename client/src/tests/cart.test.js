@@ -58,18 +58,18 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
-        // Verify cart title and items are displayed
+        // Verify cart title
         expect(screen.getByText('Individual Cart')).toBeInTheDocument();
-        expect(screen.getByText('Product A')).toBeInTheDocument();
-        expect(screen.getByText('Product B')).toBeInTheDocument();
 
-        // Wait for total price to update
+        // Wait for cart items and total price to render
         await waitFor(() => {
+            expect(screen.getByText('Product A')).toBeInTheDocument();
+            expect(screen.getByText('Product B')).toBeInTheDocument();
             expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
         });
     });
 
-    it('calls onRemoveItem when remove button is clicked', () => {
+    it('calls onRemoveItem when remove button is clicked', async () => {
         const mockRemoveItem = jest.fn();
 
         render(
@@ -86,13 +86,18 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
+        // Wait for cart items to render
+        await waitFor(() => {
+            expect(screen.getByText('Product A')).toBeInTheDocument();
+        });
+
         // Simulate removing an item
         const removeButtons = screen.getAllByRole('button', { name: /trash/i });
         fireEvent.click(removeButtons[0]);
         expect(mockRemoveItem).toHaveBeenCalledWith(0); // Ensure correct index is passed
     });
 
-    it('updates total price when quantity changes', () => {
+    it('updates total price when quantity changes', async () => {
         const mockIncreaseQuantity = jest.fn();
 
         render(
@@ -109,13 +114,18 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
+        // Wait for cart items to render
+        await waitFor(() => {
+            expect(screen.getByText('Product A')).toBeInTheDocument();
+        });
+
         // Simulate increasing quantity
         const increaseButtons = screen.getAllByRole('button', { name: /plus/i });
         fireEvent.click(increaseButtons[0]);
         expect(mockIncreaseQuantity).toHaveBeenCalledWith(mockCartItems[0]);
     });
 
-    it('displays checkout button and handles checkout click', () => {
+    it('displays checkout button and handles checkout click', async () => {
         const mockOnCheckout = jest.fn();
 
         render(
@@ -132,8 +142,8 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
-        // Verify checkout button and simulate click
-        const checkoutButton = screen.getByText(/Checkout/i);
+        // Wait for checkout button to appear
+        const checkoutButton = await screen.findByText(/Checkout/i);
         expect(checkoutButton).toBeInTheDocument();
         fireEvent.click(checkoutButton);
         expect(mockOnCheckout).toHaveBeenCalled();
@@ -156,7 +166,7 @@ describe('Cart Component', () => {
             </AuthContext.Provider>
         );
 
-        // Check error message for price fetch
+        // Wait for error message to display
         await waitFor(() => {
             expect(screen.getByText(/Error fetching price/)).toBeInTheDocument();
         });
