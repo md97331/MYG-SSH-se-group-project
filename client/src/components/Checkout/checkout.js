@@ -90,7 +90,7 @@ const Checkout = ({onPlaceOrder}) => {
                     <label htmlFor="payment">Payment Information</label>
 
                     <label htmlFor="cardNumber"> Card Number</label>
-                    <input type="text" id="cardnumber" value={cardNumber} onChange={handleCardNumberChange} required placeholder="Enter card number"
+                    <input type="text" id="cardNumber" value={cardNumber} onChange={handleCardNumberChange} required placeholder="Enter card number"
                     />
                     {isInvalid && <span className="error-message">Only numbers are allowed.</span>}
 
@@ -103,7 +103,7 @@ const Checkout = ({onPlaceOrder}) => {
                     )}
 
                     <label htmlFor="CVV">CVV</label>
-                    <input type="text" id="cvv" value={cvv} onChange={handlecvv} required placeholder="Enter the CVV" />
+                    <input type="text" id="CVV" value={cvv} onChange={handlecvv} required placeholder="Enter the CVV" />
                     {iscvvInvalid && <span className="error-message">CVV consists of 3 digits</span>}
 
                     <label htmlFor="nameOnCard">Name on Card</label>
