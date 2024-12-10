@@ -10,6 +10,7 @@ import './cart.css';
 const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQuantity, onCheckout, isIndividualTab }) => {
     const [prices, setPrices] = useState({});
     const [errors, setErrors] = useState({});
+    const [totalPrice, setTotalPrice] = useState(0);
 
     const handleGetPrice = async (productName, index) => {
         try {
@@ -33,15 +34,25 @@ const Cart = ({ title, cartItems, onRemoveItem, onIncreaseQuantity, onDecreaseQu
                 handleGetPrice(item.name, index);
             }
         });
-    }, [cartItems]);
+        const total = cartItems.reduce((acc, item, index) => {
+            const price = prices[index] || 0; // Default to 0 if price is not available yet
+            return acc + price * item.quantity;
+        }, 0);
+        setTotalPrice(total);
+    }, [cartItems, prices]);
+
 
     return (
         <div className="cart-container">
             <h2>{title}</h2>
             {isIndividualTab && cartItems.length > 0 && (
-                <button className="checkout-button" onClick={() => onCheckout()}>
-                    Checkout
-                </button>
+                <>
+                    <button className="checkout-button" onClick={() => onCheckout()}>
+                        Checkout
+                    </button>
+                    <h3>Total: ${totalPrice.toFixed(2)}</h3>
+                </>
+
             )}
 
             <ul className="cart-list">
@@ -317,7 +328,7 @@ const App = () => {
                             name: item.product_name,
                             image: item.image_url || "https://via.placeholder.com/50",
                             quantity: item.quantity,
-                            price: await fetch(`http://localhost:5001/api/products/search?name=${item.product_name}`).price * item.quantity|| 1.0,
+                            price: await fetch(`http://localhost:5001/api/products/search?name=${item.product_name}`).price * item.quantity || 1.0,
                             addedBy: userData.user.username || "Unknown User",
                             addedByUserId: item.added_by_user,
                         };
@@ -373,6 +384,8 @@ const App = () => {
                         cartItems={sharedCart}
                         onRemoveItem={() => alert("Cannot remove items from the shared cart")}
                         isIndividualTab={false}
+                        onIncreaseQuantity={() => alert("Cannot edit item quantity from the shared cart")}
+                        onDecreaseQuantity={() => alert("Cannot edit item quantity the shared cart")}
                     />
                 )}
                 {activeTab === 'individual' && (
