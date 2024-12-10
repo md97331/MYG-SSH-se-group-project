@@ -57,18 +57,16 @@ describe('Cart Component', () => {
                 />
             </AuthContext.Provider>
         );
-
+    
         // Wait for cart items to render
-        await waitFor(() => {
-            expect(screen.getByText('Product A')).toBeInTheDocument();
-            expect(screen.getByText('Product B')).toBeInTheDocument();
-        });
-
+        expect(await screen.findByText('Product A')).toBeInTheDocument();
+        expect(await screen.findByText('Product B')).toBeInTheDocument();
+    
         // Wait for total price to update
-        await waitFor(() => {
-            expect(screen.getByText(/Total: \$35.00/)).toBeInTheDocument();
-        });
+        const totalPriceElement = await screen.findByText(/Total: \$35.00/);
+        expect(totalPriceElement).toBeInTheDocument();
     });
+    
 
     it('calls onRemoveItem when remove button is clicked', async () => {
         const mockRemoveItem = jest.fn();
