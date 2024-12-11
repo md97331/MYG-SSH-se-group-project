@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Profile from '../components/Profile/Profile';
 import { AuthContext } from '../AuthContext';
@@ -61,10 +61,13 @@ describe('Profile Component', () => {
     renderProfile();
 
     const createGroupButton = screen.getByRole('button', { name: /Create a Group Code/i });
-    fireEvent.click(createGroupButton);
+
+    await act(async () => {
+      fireEvent.click(createGroupButton);
+    });
 
     expect(await screen.findByText(/Share this code with friends/i)).toBeInTheDocument();
-    expect(await screen.findByText(/ABC123/i)).toBeInTheDocument();
+    expect(screen.getByText(/ABC123/i)).toBeInTheDocument();
   });
 
   test('handles failed group creation', async () => {
@@ -76,16 +79,26 @@ describe('Profile Component', () => {
     renderProfile();
 
     const createGroupButton = screen.getByRole('button', { name: /Create a Group Code/i });
-    fireEvent.click(createGroupButton);
+
+    await act(async () => {
+      fireEvent.click(createGroupButton);
+    });
 
     expect(await screen.findByText(/Failed to create group. Please try again./i)).toBeInTheDocument();
   });
 
   test('handles joining a group', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Joined group successfully' }),
-    });
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({}), // Mock first fetch for joining the group
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          user: { ...mockUser, group_id: 'XYZ789' },
+        }), // Mock second fetch for fetching updated user data
+      });
 
     renderProfile();
 
@@ -93,7 +106,10 @@ describe('Profile Component', () => {
     const joinButton = screen.getByRole('button', { name: /Join Group/i });
 
     fireEvent.change(joinInput, { target: { value: 'XYZ789' } });
-    fireEvent.click(joinButton);
+
+    await act(async () => {
+      fireEvent.click(joinButton);
+    });
 
     expect(await screen.findByText(/You joined group XYZ789!/i)).toBeInTheDocument();
     expect(mockLogin).toHaveBeenCalledWith({ ...mockUser, group_id: 'XYZ789' });
@@ -106,10 +122,33 @@ describe('Profile Component', () => {
     const joinButton = screen.getByRole('button', { name: /Join Group/i });
 
     fireEvent.change(joinInput, { target: { value: '123' } }); // Invalid format
+
     fireEvent.click(joinButton);
 
     expect(
       screen.getByText(/Invalid group code. Please enter a 6-character alphanumeric code./i)
+    ).toBeInTheDocument();
+  });
+
+  test('handles failed joining group', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Group not found' }),
+    });
+
+    renderProfile();
+
+    const joinInput = screen.getByPlaceholderText(/Enter group code/i);
+    const joinButton = screen.getByRole('button', { name: /Join Group/i });
+
+    fireEvent.change(joinInput, { target: { value: 'XYZ789' } });
+
+    await act(async () => {
+      fireEvent.click(joinButton);
+    });
+
+    expect(
+      await screen.findByText(/Failed to join group. Please try again./i)
     ).toBeInTheDocument();
   });
 });
