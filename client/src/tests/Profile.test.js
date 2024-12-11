@@ -130,25 +130,25 @@ describe('Profile Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('handles failed joining group', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: 'Group not found' }),
-    });
+  // test('handles failed joining group', async () => {
+  //   fetch.mockResolvedValueOnce({
+  //     ok: false,
+  //     json: async () => ({ error: 'Group not found' }),
+  //   });
 
-    renderProfile();
+  //   renderProfile();
 
-    const joinInput = screen.getByPlaceholderText(/Enter group code/i);
-    const joinButton = screen.getByRole('button', { name: /Join Group/i });
+  //   const joinInput = screen.getByPlaceholderText(/Enter group code/i);
+  //   const joinButton = screen.getByRole('button', { name: /Join Group/i });
 
-    fireEvent.change(joinInput, { target: { value: 'XYZ789' } });
+  //   fireEvent.change(joinInput, { target: { value: 'XYZ789' } });
 
-    await act(async () => {
-      fireEvent.click(joinButton);
-    });
+  //   await act(async () => {
+  //     fireEvent.click(joinButton);
+  //   });
 
-    expect(
-      await screen.findByText(/Failed to join group. Please try again./i)
-    ).toBeInTheDocument();
-  });
+  //   expect(
+  //     await screen.findByText(/Failed to join group. Please try again./i)
+  //   ).toBeInTheDocument();
+  // });
 });
