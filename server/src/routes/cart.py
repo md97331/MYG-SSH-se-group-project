@@ -85,19 +85,23 @@ def get_cart_by_group(group_id):
 @cart_bp.route('/api/cart/checkout', methods=['POST'])
 def checkout_cart():
     """
-    Mark all items in the collaborative cart for a specific group as checked out.
+    Mark all items in the collaborative cart for a specific group and the current user as checked out.
     """
     data = request.get_json()
     group_id = data.get('group_id')
+    user_id = data.get('user_id')  # Pass the logged-in user's ID from the front end
+
+    if not group_id or not user_id:
+        return jsonify({"error": "Group ID and User ID are required"}), 400
 
     try:
         query = """
             UPDATE collaborative_cart
             SET is_checked_out = TRUE
-            WHERE group_id = %s AND is_checked_out = FALSE
+            WHERE group_id = %s AND added_by_user = %s AND is_checked_out = FALSE
         """
-        execute_query(query, (group_id,))
-        return jsonify({"message": "Cart checked out successfully"}), 200
+        execute_query(query, (group_id, user_id))
+        return jsonify({"message": "Cart checked out successfully for the user"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
