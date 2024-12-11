@@ -42,6 +42,7 @@ function Profile({ goToHome }) {
     const isValidCode = /^[A-Z0-9]{6}$/.test(joinGroupCode); // Validate alphanumeric and length
     if (isValidCode) {
       try {
+        // Attempt to join the group
         const response = await fetch(`http://localhost:5001/api/groups/join`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -50,12 +51,23 @@ function Profile({ goToHome }) {
             group_code: joinGroupCode,
           }),
         });
-
+  
         if (response.ok) {
-          const data = await response.json();
-          const updatedUser = { ...user, group_id: joinGroupCode };
-          login(updatedUser); // Update the user in AuthContext
-          setJoinGroupMessage(`You joined group ${joinGroupCode}!`);
+          // Retrieve the user's updated group ID
+          const groupResponse = await fetch(`http://localhost:5001/api/users/${user.id}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+  
+          if (groupResponse.ok) {
+            const groupData = await groupResponse.json();
+            console.log(groupData.user.group_id);
+            const updatedUser = { ...user, group_id: groupData.user.group_id };
+            login(updatedUser); // Update the user in AuthContext
+            setJoinGroupMessage(`You joined group ${groupData.user.group_id}!`);
+          } else {
+            setJoinGroupMessage("Failed to retrieve updated group information. Please try again.");
+          }
         } else {
           const data = await response.json();
           setJoinGroupMessage(data.error || "Failed to join group. Please try again.");
@@ -68,6 +80,7 @@ function Profile({ goToHome }) {
       setJoinGroupMessage("Invalid group code. Please enter a 6-character alphanumeric code.");
     }
   };
+  
 
   if (user) {
     return (
