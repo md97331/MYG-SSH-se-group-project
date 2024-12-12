@@ -3,67 +3,44 @@ from ..db_utils import execute_query
 
 cart_bp = Blueprint('cart', __name__)
 
-@cart_bp.route('/api/cart/update', methods=['POST'])
-def update_cart_quantity():
+@cart_bp.route('/api/cart/add', methods=['POST'])
+def add_to_cart():
     """
-    Update the quantity of a product in the collaborative cart for a specific group.
-    Supports adding or subtracting quantity.
+    Add a product to the collaborative cart for a specific group.
     """
     data = request.get_json()
     group_id = data.get('group_id')
     product_name = data.get('product_name')
     added_by_user = data.get('added_by_user')
-    action = data.get('action')  # "add" or "subtract"
     quantity = data.get('quantity', 1)
 
-    if not group_id or not product_name or not added_by_user or action not in ['add', 'subtract']:
-        return jsonify({"error": "Missing required fields or invalid action"}), 400
+    # Validate input
+    if not all([group_id, product_name, added_by_user]):
+        return jsonify({"error": "Missing required fields"}), 500
 
     try:
-        # Check if the product already exists in the cart
-        check_query = """
-            SELECT id, quantity
-            FROM collaborative_cart
-            WHERE group_id = %s AND product_name = %s AND added_by_user = %s AND is_checked_out = FALSE
+        # Check if the user exists
+        user_query = "SELECT id FROM users_table WHERE id = %s"
+        user_result = execute_query(user_query, (added_by_user,), fetchone=True)
+        if not user_result:
+            return jsonify({"error": "User does not exist"}), 500
+
+        # Check if the group exists
+        group_query = "SELECT id FROM groups_table WHERE id = %s"
+        group_result = execute_query(group_query, (group_id,), fetchone=True)
+        if not group_result:
+            return jsonify({"error": "Group ID is not valid"}), 500
+
+        # Insert product into the collaborative cart
+        insert_query = """
+            INSERT INTO collaborative_cart (group_id, product_name, added_by_user, quantity)
+            VALUES (%s, %s, %s, %s)
         """
-        existing_item = execute_query(check_query, (group_id, product_name, added_by_user))
+        execute_query(insert_query, (group_id, product_name, added_by_user, quantity))
+        return jsonify({"message": "Product added to cart"}), 201
 
-        if existing_item:
-            current_quantity = existing_item[0]['quantity']
-            new_quantity = current_quantity + quantity if action == 'add' else current_quantity - quantity
-
-            if new_quantity <= 0:
-                # Remove the product if the new quantity is 0 or less
-                delete_query = """
-                    DELETE FROM collaborative_cart
-                    WHERE id = %s
-                """
-                execute_query(delete_query, (existing_item[0]['id'],))
-                return jsonify({"message": "Product removed from cart"}), 200
-            else:
-                # Update the product quantity
-                update_query = """
-                    UPDATE collaborative_cart
-                    SET quantity = %s
-                    WHERE id = %s
-                """
-                execute_query(update_query, (new_quantity, existing_item[0]['id']))
-                return jsonify({"message": "Product quantity updated"}), 200
-        else:
-            if action == 'add':
-                # Insert new product if it does not exist and action is "add"
-                insert_query = """
-                    INSERT INTO collaborative_cart (group_id, product_name, added_by_user, quantity)
-                    VALUES (%s, %s, %s, %s)
-                """
-                execute_query(insert_query, (group_id, product_name, added_by_user, quantity))
-                return jsonify({"message": "Product added to cart"}), 201
-            else:
-                # Cannot subtract from a non-existing product
-                return jsonify({"error": "Product not found in cart"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 @cart_bp.route('/api/cart/<int:group_id>', methods=['GET'])
@@ -72,6 +49,13 @@ def get_cart_by_group(group_id):
     Get all products in the collaborative cart for a specific group.
     """
     try:
+        # Validate if the group exists
+        group_query = "SELECT id FROM groups_table WHERE id = %s"
+        group_result = execute_query(group_query, (group_id,), fetchone=True)
+        if not group_result:
+            return jsonify({"error": "Group ID is not valid"}), 404
+
+        # Query the cart if the group exists
         query = """
             SELECT id, product_name, added_by_user, quantity, is_checked_out
             FROM collaborative_cart
@@ -79,29 +63,26 @@ def get_cart_by_group(group_id):
         """
         cart_items = execute_query(query, (group_id,))
         return jsonify({"cart": cart_items}), 200
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @cart_bp.route('/api/cart/checkout', methods=['POST'])
 def checkout_cart():
     """
-    Mark all items in the collaborative cart for a specific group and the current user as checked out.
+    Mark all items in the collaborative cart for a specific group as checked out.
     """
     data = request.get_json()
     group_id = data.get('group_id')
-    user_id = data.get('user_id')  # Pass the logged-in user's ID from the front end
-
-    if not group_id or not user_id:
-        return jsonify({"error": "Group ID and User ID are required"}), 400
 
     try:
         query = """
             UPDATE collaborative_cart
             SET is_checked_out = TRUE
-            WHERE group_id = %s AND added_by_user = %s AND is_checked_out = FALSE
+            WHERE group_id = %s AND is_checked_out = FALSE
         """
-        execute_query(query, (group_id, user_id))
-        return jsonify({"message": "Cart checked out successfully for the user"}), 200
+        execute_query(query, (group_id,))
+        return jsonify({"message": "Cart checked out successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -115,7 +96,12 @@ def remove_item_from_cart():
 
     try:
         query = "DELETE FROM collaborative_cart WHERE id = %s"
-        execute_query(query, (item_id,))
+        result = execute_query(query, (item_id,))
+
+        # Check if the item was deleted
+        if not result:
+            return jsonify({"error": "Failed to remove item from cart"}), 500
+
         return jsonify({"message": "Item removed from cart"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
